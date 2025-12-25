@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "you",
   "type": "module",
+  "main": "./dist/index.js",
   "bin": {
     "algolia-codegen": "dist/cli.js"
   },
