@@ -36,7 +36,7 @@ export const main = async (configPath?: string) => {
       // Process each file path in the schema
       for (const [filePath, generatorConfig] of Object.entries(urlSchema)) {
         try {
-          await fetchAlgoliaData(filePath, generatorConfig);
+          await fetchAlgoliaData(filePath, generatorConfig, config.overwrite);
         } catch (error) {
           console.error(`\nError processing file: ${filePath}`);
           if (error instanceof Error) {
