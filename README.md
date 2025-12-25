@@ -1,18 +1,13 @@
 # Algolia Type Generator
 
-This script automatically generates TypeScript types from your Algolia index by fetching a sample record and analyzing its structure.
+This script automatically generates TypeScript types from your Algolia indices by fetching sample records and analyzing their structure. It supports multiple indices and flexible configuration through a config file.
 
 **Repository**: [https://github.com/nightlightmare/algolia-codegen](https://github.com/nightlightmare/algolia-codegen)
 
 ## Prerequisites
 
-Make sure you have the following environment variables set in your `.env` file:
-
-- `ALGOLIA_APP_ID` - Your Algolia Application ID
-- `ALGOLIA_SEARCH_KEY` - Your Algolia Search API Key
-- `ALGOLIA_INDEX_NAME` - Your Algolia Index Name
-
-The script will automatically check for `.env`, `.env.local`, and `.env.development.local` files in the current directory.
+- Node.js >= 18
+- Algolia account with at least one index
 
 ## Installation
 
@@ -30,11 +25,30 @@ pnpm add algolia-codegen
 yarn add algolia-codegen
 ```
 
-## Usage
+## Quick Start
 
-### CLI Usage
+1. Create a configuration file named `algolia-codegen.ts` (or `.js`) in your project root:
 
-After installation, you can use the CLI command:
+```typescript
+import type { AlgoliaCodegenConfig } from "algolia-codegen";
+
+const config: AlgoliaCodegenConfig = {
+  overwrite: true,
+  generates: {
+    "src/algolia/types.ts": {
+      appId: "YOUR_APP_ID",
+      searchKey: "YOUR_SEARCH_API_KEY",
+      indexName: "products",
+      prefix: "Algolia", // Optional
+      postfix: "Type", // Optional
+    },
+  },
+};
+
+export default config;
+```
+
+2. Run the generator:
 
 ```bash
 algolia-codegen
@@ -46,79 +60,194 @@ Or if installed locally:
 npx algolia-codegen
 ```
 
-### Programmatic Usage
+## Configuration
 
-You can also import and use the package programmatically:
+Create a configuration file named `algolia-codegen.ts` (or `.js`) in your project root. The config file should export a default object with the following structure:
 
 ```typescript
-import { main } from 'algolia-codegen';
+import type { AlgoliaCodegenConfig } from "algolia-codegen";
 
-main();
+const config: AlgoliaCodegenConfig = {
+  overwrite: true,
+  generates: {
+    "src/algolia/types.ts": {
+      appId: "YOUR_APP_ID",
+      searchKey: "YOUR_SEARCH_API_KEY",
+      indexName: "products",
+      prefix: "Algolia", // Optional
+      postfix: "Type", // Optional
+    },
+  },
+};
+
+export default config;
+```
+
+### Multiple Indices
+
+You can generate types for multiple indices:
+
+```typescript
+const config: AlgoliaCodegenConfig = {
+  overwrite: true,
+  generates: {
+    "src/algolia/products.ts": {
+      appId: "YOUR_APP_ID",
+      searchKey: "YOUR_SEARCH_API_KEY",
+      indexName: "products",
+    },
+    "src/algolia/users.ts": {
+      appId: "YOUR_APP_ID",
+      searchKey: "YOUR_SEARCH_API_KEY",
+      indexName: "users",
+    },
+  },
+};
+```
+
+### Array of Configurations
+
+You can also use an array of configurations:
+
+```typescript
+const config: AlgoliaCodegenConfig = {
+  overwrite: true,
+  generates: [
+    {
+      "src/algolia/products.ts": {
+        appId: "YOUR_APP_ID",
+        searchKey: "YOUR_SEARCH_API_KEY",
+        indexName: "products",
+      },
+    },
+    {
+      "src/algolia/users.ts": {
+        appId: "YOUR_APP_ID",
+        searchKey: "YOUR_SEARCH_API_KEY",
+        indexName: "users",
+      },
+    },
+  ],
+};
+```
+
+## Usage
+
+### CLI Usage
+
+After installation, you can use the CLI command:
+
+```bash
+algolia-codegen
+```
+
+Or specify a custom config file:
+
+```bash
+algolia-codegen --config path/to/config.ts
+# or
+algolia-codegen -c path/to/config.ts
+```
+
+Or if installed locally:
+
+```bash
+npx algolia-codegen
+```
+
+## Configuration Schema
+
+### `AlgoliaCodegenConfig`
+
+```typescript
+type AlgoliaCodegenConfig = {
+  overwrite: boolean;
+  generates: InstanceOrArray<UrlSchema>;
+};
+```
+
+### `AlgoliaCodegenGeneratorConfig`
+
+```typescript
+type AlgoliaCodegenGeneratorConfig = {
+  appId: string; // Required: Algolia Application ID
+  searchKey: string; // Required: Algolia Search API Key
+  indexName: string; // Required: Algolia Index Name
+  prefix?: string; // Optional: Prefix for generated type names
+  postfix?: string; // Optional: Postfix for generated type names
+};
 ```
 
 ## How It Works
 
-1. **Connects to Algolia**: Uses your configured Algolia credentials to connect to your index
-2. **Fetches Sample Record**: Retrieves one record from your Algolia index
-3. **Analyzes Structure**: Recursively analyzes the JSON structure to infer TypeScript types
-4. **Generates Types**: Creates TypeScript interface files in the specified output directory
-5. **Handles Special Cases**:
-   - Detects `AlgoliaIdValue` patterns (objects with `id` and `value` properties)
-   - Handles nested objects and arrays
-   - Preserves optional fields (null/undefined values)
-   - Generates proper imports between types
+1. **Loads Configuration**: Reads the `algolia-codegen.ts` config file (or custom path)
+2. **Processes Each Path**: For each file path specified in the config:
+   - Connects to Algolia using the provided credentials
+   - Fetches a sample record from the specified index
+   - Analyzes the record structure and generates TypeScript types
+   - Creates a single TypeScript file containing all types found in the index
+3. **Type Generation**: The generator automatically:
+   - Infers types from the sample record structure
+   - Handles nested objects, arrays, and complex types
+   - Detects and generates generic `IdValue<T>` types for Algolia's id-value pattern arrays
+   - Generates proper TypeScript interfaces with JSDoc comments
+   - Sorts types by dependencies for correct ordering
+4. **Error Handling**: Continues processing other files even if one fails, with detailed error messages
 
-## Generated Files
-
-The script generates TypeScript interface files in the output directory (default: `src/shared/algolia/`).
-
-Each type gets its own file (e.g., `AlgoliaCampground.ts`, `AlgoliaAddress.ts`), and an `index.ts` file exports all types.
+Each generated file contains all types found in the index, including nested types, properly organized and sorted by dependencies.
 
 ## Notes
 
-- The script analyzes a single sample record, so make sure your index has at least one record
-- If your data structure varies significantly between records, you may need to manually adjust some types
-- The script will overwrite existing type files, so make sure to commit your changes before running
-- Consider running this script as part of your CI/CD pipeline to keep types in sync with your Algolia index
+- Each index must have at least one record for the script to work
+- The script processes files sequentially and continues even if one fails
+- Make sure your config file exports a default object
+- For TypeScript config files, you may need to use `tsx` or compile them first: `tsx algolia-codegen`
+- Each generated file contains all types found in the index (including nested types) in a single file
+- Types are automatically sorted by dependencies to ensure correct ordering
+- The generator handles arrays, nested objects, optional fields, and null values
+- Automatically detects Algolia's `IdValue` pattern (arrays of objects with `id` and `value` properties) and generates generic types
+- The project uses ES Modules - all local imports use `.js` extensions
+- The library is compiled to both ESM and CommonJS formats for maximum compatibility
 
-## Customization
+## Examples
 
-You can modify `generate-types.ts` to:
-- Adjust type naming conventions
-- Add custom type inference logic
-- Change the output directory
-- Add additional type transformations
+### Generated Type Example
 
-For contributions and feature requests, please visit the [GitHub repository](https://github.com/nightlightmare/algolia-codegen).
+Given an Algolia record like:
 
-## Publishing
+```json
+{
+  "objectID": "123",
+  "name": "Product Name",
+  "price": 99.99,
+  "tags": ["tag1", "tag2"],
+  "metadata": {
+    "category": "electronics",
+    "rating": 4.5
+  }
+}
+```
 
-This package is automatically published to npm when changes are merged into the `main` branch via GitHub Actions.
+The generator will create TypeScript types:
 
-### Setting up NPM_TOKEN
+```typescript
+/**
+ * Generated TypeScript types for Algolia index: products
+ * This file is auto-generated. Do not edit manually.
+ */
 
-To enable automatic publishing, you need to configure the `NPM_TOKEN` secret in your GitHub repository:
+export interface AlgoliaHitType {
+  metadata: AlgoliaMetadataType;
+  name: string;
+  objectID: string;
+  price: number;
+  tags: string[];
+}
 
-1. Go to your GitHub repository
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Name: `NPM_TOKEN`
-5. Value: Your npm access token (create one at https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
-6. Make sure the token has **Automation** or **Publish** permissions
-7. Click **Add secret**
-
-The workflow will automatically:
-- Build the package
-- Publish to npm when PRs are merged into `main`
-- Use provenance for enhanced security
-
-### Manual Publishing
-
-To publish manually:
-
-```bash
-pnpm build
-pnpm publish
+export interface AlgoliaMetadataType {
+  category: string;
+  rating: number;
+}
 ```
 
 ## Repository
@@ -127,3 +256,6 @@ pnpm publish
 - **Issues**: [https://github.com/nightlightmare/algolia-codegen/issues](https://github.com/nightlightmare/algolia-codegen/issues)
 - **npm**: [https://www.npmjs.com/package/algolia-codegen](https://www.npmjs.com/package/algolia-codegen)
 
+## License
+
+MIT

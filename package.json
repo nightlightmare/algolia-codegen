@@ -1,6 +1,6 @@
 {
   "name": "algolia-codegen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate TypeScript types from Algolia indices",
   "license": "MIT",
   "author": "nightlightmare",
@@ -40,6 +40,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
     "prepublishOnly": "pnpm clean && pnpm build"
   },
   "dependencies": {
@@ -47,7 +48,9 @@
     "commander": "^12.0.0"
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.0"
   },
   "engines": {
