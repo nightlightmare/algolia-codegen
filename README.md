@@ -81,6 +81,29 @@ Each type gets its own file (e.g., `AlgoliaCampground.ts`, `AlgoliaAddress.ts`),
 - The script will overwrite existing type files, so make sure to commit your changes before running
 - Consider running this script as part of your CI/CD pipeline to keep types in sync with your Algolia index
 
+## Project Structure
+
+The project is organized into the following structure:
+
+```
+src/
+├── index.ts              # Main entry point with exports and main function
+├── types.ts              # TypeScript type definitions
+├── cli.ts                # CLI entry point
+├── generate-types.ts     # Type generation logic
+└── utils/
+    ├── validation.ts     # Configuration validation functions
+    └── config-loader.ts  # Configuration file loading logic
+```
+
+### Module Exports
+
+The package exports the following:
+
+- **Types**: `AlgoliaCodegenConfig`, `AlgoliaCodegenGeneratorConfig`, `UrlSchema`, `InstanceOrArray`
+- **Main function**: `main(configPath?: string)` - Loads and processes configuration
+- **Validation functions**: `validateConfig`, `validateUrlSchema`, `validateGeneratorConfig` - For advanced usage
+
 ## Customization
 
 You can modify `generate-types.ts` to:
