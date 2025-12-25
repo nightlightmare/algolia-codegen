@@ -51,7 +51,7 @@ npx algolia-codegen
 You can also import and use the package programmatically:
 
 ```typescript
-import { main } from 'algolia-codegen';
+import { main } from "algolia-codegen";
 
 main();
 ```
@@ -84,6 +84,7 @@ Each type gets its own file (e.g., `AlgoliaCampground.ts`, `AlgoliaAddress.ts`),
 ## Customization
 
 You can modify `generate-types.ts` to:
+
 - Adjust type naming conventions
 - Add custom type inference logic
 - Change the output directory
@@ -91,39 +92,8 @@ You can modify `generate-types.ts` to:
 
 For contributions and feature requests, please visit the [GitHub repository](https://github.com/nightlightmare/algolia-codegen).
 
-## Publishing
-
-This package is automatically published to npm when changes are merged into the `main` branch via GitHub Actions.
-
-### Setting up NPM_TOKEN
-
-To enable automatic publishing, you need to configure the `NPM_TOKEN` secret in your GitHub repository:
-
-1. Go to your GitHub repository
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Name: `NPM_TOKEN`
-5. Value: Your npm access token (create one at https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
-6. Make sure the token has **Automation** or **Publish** permissions
-7. Click **Add secret**
-
-The workflow will automatically:
-- Build the package
-- Publish to npm when PRs are merged into `main`
-- Use provenance for enhanced security
-
-### Manual Publishing
-
-To publish manually:
-
-```bash
-pnpm build
-pnpm publish
-```
-
 ## Repository
 
 - **GitHub**: [https://github.com/nightlightmare/algolia-codegen](https://github.com/nightlightmare/algolia-codegen)
 - **Issues**: [https://github.com/nightlightmare/algolia-codegen/issues](https://github.com/nightlightmare/algolia-codegen/issues)
 - **npm**: [https://www.npmjs.com/package/algolia-codegen](https://www.npmjs.com/package/algolia-codegen)
-
