@@ -3,8 +3,26 @@
   "version": "0.1.0",
   "description": "Generate TypeScript types from Algolia indices",
   "license": "MIT",
-  "author": "you",
+  "author": "nightlightmare",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nightlightmare/algolia-codegen.git"
+  },
+  "homepage": "https://github.com/nightlightmare/algolia-codegen#readme",
+  "bugs": {
+    "url": "https://github.com/nightlightmare/algolia-codegen/issues"
+  },
+  "keywords": [
+    "algolia",
+    "typescript",
+    "codegen",
+    "type-generation",
+    "algolia-types",
+    "code-generation",
+    "typescript-generator"
+  ],
   "type": "module",
+  "main": "./dist/index.js",
   "bin": {
     "algolia-codegen": "dist/cli.js"
   },

@@ -1,0 +1,69 @@
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check if version already published
+        id: check-version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          
+          echo "Checking if version $PACKAGE_VERSION of $PACKAGE_NAME is already published..."
+          
+          # Check if package exists and version is published
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version > /dev/null 2>&1; then
+            echo "Version $PACKAGE_VERSION is already published!"
+            echo "published=true" >> $GITHUB_OUTPUT
+          else
+            # Check if it's because package doesn't exist (first publish) or version doesn't exist
+            if npm view "$PACKAGE_NAME" version > /dev/null 2>&1; then
+              echo "Package exists but version $PACKAGE_VERSION is not published yet."
+            else
+              echo "Package does not exist yet. This will be the first publication."
+            fi
+            echo "published=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm
+        if: steps.check-version.outputs.published != 'true'
+        run: pnpm publish --no-git-checks --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip publish notice
+        if: steps.check-version.outputs.published == 'true'
+        run: |
+          echo "::warning::Version $(node -p "require('./package.json').version") is already published. Skipping publication."
+          exit 0
+
