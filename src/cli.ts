@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
+import { config as loadDotenv } from 'dotenv';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import { Command } from 'commander';
 import { main } from './index.js';
+
+// Load .env file if it exists
+const envPath = resolve(process.cwd(), '.env');
+if (existsSync(envPath)) {
+  loadDotenv({ path: envPath });
+}
 
 const program = new Command()
 

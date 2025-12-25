@@ -2,6 +2,7 @@ import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
 import type { AlgoliaCodegenConfig } from '../types.js';
+import { loadTypeScriptConfig } from './load-typescript-config.js';
 import { validateConfig } from './validations/index.js';
 
 /**
@@ -30,37 +31,43 @@ export async function loadConfig(
   const configUrl = pathToFileURL(resolvedPath).href;
 
   let configModule;
-  try {
-    configModule = await import(configUrl);
-  } catch (importError) {
-    // If .ts import fails, try .js extension
-    const jsPath = resolvedPath.replace(/\.ts$/, '.js');
-    if (existsSync(jsPath)) {
-      const jsUrl = pathToFileURL(jsPath).href;
-      try {
-        configModule = await import(jsUrl);
-      } catch (jsImportError) {
+  
+  // If it's a TypeScript file, use esbuild to load it
+  if (resolvedPath.endsWith('.ts')) {
+    try {
+      configModule = await loadTypeScriptConfig(resolvedPath);
+    } catch (tsError) {
+      // If esbuild fails, try .js extension as fallback
+      const jsPath = resolvedPath.replace(/\.ts$/, '.js');
+      if (existsSync(jsPath)) {
+        const jsUrl = pathToFileURL(jsPath).href;
+        try {
+          configModule = await import(jsUrl);
+        } catch (jsImportError) {
+          throw new Error(
+            `Failed to import config file: ${resolvedPath}\n` +
+            `Tried both .ts (via esbuild) and .js extensions.\n` +
+            `TypeScript error: ${tsError instanceof Error ? tsError.message : String(tsError)}\n` +
+            `JavaScript error: ${jsImportError instanceof Error ? jsImportError.message : String(jsImportError)}`
+          );
+        }
+      } else {
         throw new Error(
-          `Failed to import config file: ${resolvedPath}\n` +
-          `Tried both .ts and .js extensions.\n` +
-          `Error: ${jsImportError instanceof Error ? jsImportError.message : String(jsImportError)}\n` +
-          `Note: If using TypeScript config, you may need to compile it first or use a tool like tsx.`
+          `Failed to load TypeScript config file: ${resolvedPath}\n` +
+          `Error: ${tsError instanceof Error ? tsError.message : String(tsError)}\n` +
+          `Make sure esbuild is installed as a dependency.`
         );
       }
-    } else {
+    }
+  } else {
+    // Regular JavaScript file, use standard import
+    try {
+      configModule = await import(configUrl);
+    } catch (importError) {
       const errorMessage = importError instanceof Error ? importError.message : String(importError);
-      const isTypeScriptError = resolvedPath.endsWith('.ts') &&
-        (errorMessage.includes('Cannot find module') || errorMessage.includes('Unknown file extension'));
-
       throw new Error(
         `Failed to import config file: ${resolvedPath}\n` +
-        (isTypeScriptError
-          ? `Node.js cannot directly import TypeScript files.\n` +
-          `Please either:\n` +
-          `  1. Compile your config to JavaScript (.js)\n` +
-          `  2. Use a tool like tsx to run the CLI: tsx algolia-codegen\n` +
-          `  3. Or use a JavaScript config file instead\n`
-          : `Error: ${errorMessage}`)
+        `Error: ${errorMessage}`
       );
     }
   }

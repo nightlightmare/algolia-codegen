@@ -1,4 +1,4 @@
-import { loadConfig } from './utils/config-loader.js';
+import { loadConfig } from './utils/load-config.js';
 import { fetchAlgoliaData } from './utils/fetch-algolia-data.js';
 import type { UrlSchema } from './types.js';
 
