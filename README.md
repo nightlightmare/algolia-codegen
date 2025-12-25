@@ -2,6 +2,8 @@
 
 This script automatically generates TypeScript types from your Algolia index by fetching a sample record and analyzing its structure.
 
+**Repository**: [https://github.com/nightlightmare/algolia-codegen](https://github.com/nightlightmare/algolia-codegen)
+
 ## Prerequisites
 
 Make sure you have the following environment variables set in your `.env` file (located in `packages/app/.env`):
@@ -70,6 +72,8 @@ You can modify `generate-types.ts` to:
 - Change the output directory
 - Add additional type transformations
 
+For contributions and feature requests, please visit the [GitHub repository](https://github.com/nightlightmare/algolia-codegen).
+
 ## Publishing
 
 This package is automatically published to npm when changes are merged into the `main` branch via GitHub Actions.
@@ -99,4 +103,10 @@ To publish manually:
 pnpm build
 pnpm publish
 ```
+
+## Repository
+
+- **GitHub**: [https://github.com/nightlightmare/algolia-codegen](https://github.com/nightlightmare/algolia-codegen)
+- **Issues**: [https://github.com/nightlightmare/algolia-codegen/issues](https://github.com/nightlightmare/algolia-codegen/issues)
+- **npm**: [https://www.npmjs.com/package/algolia-codegen](https://www.npmjs.com/package/algolia-codegen)
 

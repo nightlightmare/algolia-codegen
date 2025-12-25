@@ -1,3 +1,12 @@
+/**
+ * Algolia Type Generator
+ * 
+ * This script automatically generates TypeScript types from Algolia indices
+ * by fetching a sample record and analyzing its structure.
+ * 
+ * Repository: https://github.com/nightlightmare/algolia-codegen
+ */
+
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 
