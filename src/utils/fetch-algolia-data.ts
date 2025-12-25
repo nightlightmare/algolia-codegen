@@ -2,10 +2,10 @@ import algoliasearch from 'algoliasearch';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import type { AlgoliaCodegenGeneratorConfig } from '../types.js';
+import { generateTypeScriptTypes } from './generate-typescript-types.js';
 
 /**
  * Fetches data from Algolia for a given generator config and generates TypeScript types
- * Based on main() function from generate-types.ts
  */
 export async function fetchAlgoliaData(
   filePath: string,
@@ -26,24 +26,59 @@ export async function fetchAlgoliaData(
   }
 
   console.log(`Connecting to Algolia...`);
+  console.log(`App ID: ${generatorConfig.appId}`);
 
-  const client = algoliasearch(
-    generatorConfig.appId,
-    generatorConfig.searchKey,
-  );
+  let client;
+  try {
+    client = algoliasearch(
+      generatorConfig.appId,
+      generatorConfig.searchKey,
+    );
+  } catch (error) {
+    throw new Error(
+      `Failed to initialize Algolia client: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 
   console.log(`Fetching sample record from index: ${generatorConfig.indexName}`);
 
   // Fetch a sample record
-  const results = await client.search([
-    {
-      indexName: generatorConfig.indexName,
-      query: '',
-      params: {
-        hitsPerPage: 1,
+  let results;
+  try {
+    results = await client.search([
+      {
+        indexName: generatorConfig.indexName,
+        query: '',
+        params: {
+          hitsPerPage: 1,
+        },
       },
-    },
-  ]);
+    ]);
+  } catch (error) {
+    let errorMessage: string;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (error && typeof error === 'object') {
+      // Try to extract meaningful information from Algolia error object
+      const errorObj = error as Record<string, unknown>;
+      if (errorObj.message) {
+        errorMessage = String(errorObj.message);
+      } else if (errorObj.status) {
+        errorMessage = `HTTP ${errorObj.status}: ${errorObj.statusText || 'Unknown error'}`;
+      } else {
+        try {
+          errorMessage = JSON.stringify(error, null, 2);
+        } catch {
+          errorMessage = String(error);
+        }
+      }
+    } else {
+      errorMessage = String(error);
+    }
+    throw new Error(
+      `Failed to fetch data from Algolia index "${generatorConfig.indexName}" (App ID: ${generatorConfig.appId}): ${errorMessage}`
+    );
+  }
 
   if (!results.results || results.results.length === 0) {
     throw new Error(`No results found in Algolia index: ${generatorConfig.indexName}`);
@@ -71,26 +106,4 @@ export async function fetchAlgoliaData(
   // Write file
   writeFileSync(resolvedPath, fileContent, 'utf-8');
   console.log(`Generated file: ${filePath}`);
-}
-
-/**
- * Generates TypeScript types from a sample Algolia hit
- */
-function generateTypeScriptTypes(
-  sampleHit: Record<string, unknown>,
-  config: AlgoliaCodegenGeneratorConfig
-): string {
-  const prefix = config.prefix || 'Algolia';
-  const postfix = config.postfix || '';
-  const typeName = `${prefix}Hit${postfix}`;
-
-  const lines: string[] = [];
-  lines.push('/**');
-  lines.push(` * Generated TypeScript types for Algolia index: ${config.indexName}`);
-  lines.push(' * This file is auto-generated. Do not edit manually.');
-  lines.push(' */');
-  lines.push('');
-  lines.push(`export interface ${typeName} {`);
-
-  return lines.join('\n');
 }

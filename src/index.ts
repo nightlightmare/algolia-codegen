@@ -15,7 +15,7 @@ export {
   validateConfig,
   validateUrlSchema,
   validateGeneratorConfig,
-} from './utils/validation.js';
+} from './utils/validations/index.js';
 
 /**
  * Main function to load and process configuration
@@ -41,8 +41,16 @@ export const main = async (configPath?: string) => {
           console.error(`\nError processing file: ${filePath}`);
           if (error instanceof Error) {
             console.error(error.message);
+            if (error.stack) {
+              console.error(error.stack);
+            }
           } else {
-            console.error(String(error));
+            // Try to stringify the error object for better debugging
+            try {
+              console.error(JSON.stringify(error, null, 2));
+            } catch {
+              console.error(String(error));
+            }
           }
           // Continue processing other files even if one fails
         }

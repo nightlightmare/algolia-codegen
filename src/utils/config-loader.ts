@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
 import type { AlgoliaCodegenConfig } from '../types.js';
-import { validateConfig } from './validation.js';
+import { validateConfig } from './validations/index.js';
 
 /**
  * Loads and validates configuration from a file
