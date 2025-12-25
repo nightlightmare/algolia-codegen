@@ -1,4 +1,4 @@
-import algoliasearch from 'algoliasearch';
+import { algoliasearch } from 'algoliasearch';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import type { AlgoliaCodegenGeneratorConfig } from '../types.js';
@@ -48,8 +48,8 @@ export async function fetchAlgoliaData(
     results = await client.search([
       {
         indexName: generatorConfig.indexName,
-        query: '',
         params: {
+          query: '',
           hitsPerPage: 1,
         },
       },

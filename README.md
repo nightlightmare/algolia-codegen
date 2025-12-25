@@ -180,8 +180,9 @@ type AlgoliaCodegenGeneratorConfig = {
 
 ## How It Works
 
-1. **Loads Configuration**: Reads the `algolia-codegen.ts` config file (or custom path)
-2. **Processes Each Path**: For each file path specified in the config:
+1. **Loads Environment Variables**: Automatically loads `.env` file if present in the current directory
+2. **Loads Configuration**: Reads the `algolia-codegen.ts` config file (or custom path), supporting both TypeScript and JavaScript
+3. **Processes Each Path**: For each file path specified in the config:
    - Connects to Algolia using the provided credentials
    - Fetches a sample record from the specified index
    - Analyzes the record structure and generates TypeScript types
@@ -201,7 +202,8 @@ Each generated file contains all types found in the index, including nested type
 - Each index must have at least one record for the script to work
 - The script processes files sequentially and continues even if one fails
 - Make sure your config file exports a default object
-- For TypeScript config files, you may need to use `tsx` or compile them first: `tsx algolia-codegen`
+- TypeScript config files (`.ts`) are automatically supported - no compilation needed
+- Environment variables from `.env` file are automatically loaded if present in the current directory
 - Each generated file contains all types found in the index (including nested types) in a single file
 - Types are automatically sorted by dependencies to ensure correct ordering
 - The generator handles arrays, nested objects, optional fields, and null values
