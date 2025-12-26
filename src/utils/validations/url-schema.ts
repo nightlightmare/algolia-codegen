@@ -9,10 +9,7 @@ export function validateUrlSchema(
   path: string
 ): asserts urlSchema is UrlSchema {
   if (typeof urlSchema !== 'object' || urlSchema === null || Array.isArray(urlSchema)) {
-    throw new Error(
-      `Invalid generates entry: must be an object\n` +
-      `Path: ${path}`
-    );
+    throw new Error(`Invalid generates entry: must be an object\n` + `Path: ${path}`);
   }
 
   const schema = urlSchema as Record<string, unknown>;
@@ -21,12 +18,10 @@ export function validateUrlSchema(
   for (const [filePath, generatorConfig] of Object.entries(schema)) {
     if (typeof filePath !== 'string') {
       throw new Error(
-        `Invalid generates entry: file path must be a string\n` +
-        `Path: ${path}[${filePath}]`
+        `Invalid generates entry: file path must be a string\n` + `Path: ${path}[${filePath}]`
       );
     }
 
     validateGeneratorConfig(generatorConfig, `${path}["${filePath}"]`);
   }
 }
-

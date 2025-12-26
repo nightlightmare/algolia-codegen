@@ -8,9 +8,7 @@ import { validateConfig } from './validations/index.js';
 /**
  * Loads and validates configuration from a file
  */
-export async function loadConfig(
-  configPath?: string
-): Promise<AlgoliaCodegenConfig> {
+export async function loadConfig(configPath?: string): Promise<AlgoliaCodegenConfig> {
   // Determine config file path
   const defaultConfigPath = 'algolia-codegen.ts';
   const finalConfigPath = configPath || defaultConfigPath;
@@ -22,7 +20,7 @@ export async function loadConfig(
   if (!existsSync(resolvedPath)) {
     throw new Error(
       `Config file not found: ${resolvedPath}\n` +
-      `Please create a config file or specify a different path using --config option.`
+        `Please create a config file or specify a different path using --config option.`
     );
   }
 
@@ -31,7 +29,7 @@ export async function loadConfig(
   const configUrl = pathToFileURL(resolvedPath).href;
 
   let configModule;
-  
+
   // If it's a TypeScript file, use esbuild to load it
   if (resolvedPath.endsWith('.ts')) {
     try {
@@ -46,16 +44,16 @@ export async function loadConfig(
         } catch (jsImportError) {
           throw new Error(
             `Failed to import config file: ${resolvedPath}\n` +
-            `Tried both .ts (via esbuild) and .js extensions.\n` +
-            `TypeScript error: ${tsError instanceof Error ? tsError.message : String(tsError)}\n` +
-            `JavaScript error: ${jsImportError instanceof Error ? jsImportError.message : String(jsImportError)}`
+              `Tried both .ts (via esbuild) and .js extensions.\n` +
+              `TypeScript error: ${tsError instanceof Error ? tsError.message : String(tsError)}\n` +
+              `JavaScript error: ${jsImportError instanceof Error ? jsImportError.message : String(jsImportError)}`
           );
         }
       } else {
         throw new Error(
           `Failed to load TypeScript config file: ${resolvedPath}\n` +
-          `Error: ${tsError instanceof Error ? tsError.message : String(tsError)}\n` +
-          `Make sure esbuild is installed as a dependency.`
+            `Error: ${tsError instanceof Error ? tsError.message : String(tsError)}\n` +
+            `Make sure esbuild is installed as a dependency.`
         );
       }
     }
@@ -65,10 +63,7 @@ export async function loadConfig(
       configModule = await import(configUrl);
     } catch (importError) {
       const errorMessage = importError instanceof Error ? importError.message : String(importError);
-      throw new Error(
-        `Failed to import config file: ${resolvedPath}\n` +
-        `Error: ${errorMessage}`
-      );
+      throw new Error(`Failed to import config file: ${resolvedPath}\n` + `Error: ${errorMessage}`);
     }
   }
 
@@ -76,7 +71,7 @@ export async function loadConfig(
   if (!configModule.default) {
     throw new Error(
       `Config file does not export a default object: ${resolvedPath}\n` +
-      `Please ensure your config file exports a default object: export default { ... }`
+        `Please ensure your config file exports a default object: export default { ... }`
     );
   }
 
@@ -86,7 +81,7 @@ export async function loadConfig(
   if (typeof config !== 'object' || config === null || Array.isArray(config)) {
     throw new Error(
       `Config file default export must be an object: ${resolvedPath}\n` +
-      `Received: ${typeof config}`
+        `Received: ${typeof config}`
     );
   }
 
@@ -95,4 +90,3 @@ export async function loadConfig(
 
   return config;
 }
-

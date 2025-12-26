@@ -1,12 +1,20 @@
 # Algolia Type Generator
 
+[![npm version](https://img.shields.io/npm/v/algolia-codegen.svg?style=flat-square)](https://www.npmjs.com/package/algolia-codegen)
+[![npm downloads](https://img.shields.io/npm/dm/algolia-codegen.svg?style=flat-square)](https://www.npmjs.com/package/algolia-codegen)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/algolia-codegen?style=flat-square)](https://bundlephobia.com/package/algolia-codegen)
+[![GitHub stars](https://img.shields.io/github/stars/nightlightmare/algolia-codegen.svg?style=flat-square&logo=github)](https://github.com/nightlightmare/algolia-codegen)
+[![GitHub issues](https://img.shields.io/github/issues/nightlightmare/algolia-codegen.svg?style=flat-square&logo=github)](https://github.com/nightlightmare/algolia-codegen/issues)
+[![GitHub license](https://img.shields.io/github/license/nightlightmare/algolia-codegen.svg?style=flat-square)](https://github.com/nightlightmare/algolia-codegen/blob/main/LICENSE)
+[![Node.js version](https://img.shields.io/node/v/algolia-codegen.svg?style=flat-square)](https://nodejs.org/)
+
 This script automatically generates TypeScript types from your Algolia indices by fetching sample records and analyzing their structure. It supports multiple indices and flexible configuration through a config file.
 
 **Repository**: [https://github.com/nightlightmare/algolia-codegen](https://github.com/nightlightmare/algolia-codegen)
 
 ## Prerequisites
 
-- Node.js >= 18
+- Node.js >= 20
 - Algolia account with at least one index
 
 ## Installation
@@ -30,17 +38,17 @@ yarn add algolia-codegen
 1. Create a configuration file named `algolia-codegen.ts` (or `.js`) in your project root:
 
 ```typescript
-import type { AlgoliaCodegenConfig } from "algolia-codegen";
+import type { AlgoliaCodegenConfig } from 'algolia-codegen';
 
 const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: {
-    "src/algolia/types.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "products",
-      prefix: "Algolia", // Optional
-      postfix: "Type", // Optional
+    'src/algolia/types.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'products',
+      prefix: 'Algolia', // Optional
+      postfix: 'Type', // Optional
     },
   },
 };
@@ -65,17 +73,17 @@ npx algolia-codegen
 Create a configuration file named `algolia-codegen.ts` (or `.js`) in your project root. The config file should export a default object with the following structure:
 
 ```typescript
-import type { AlgoliaCodegenConfig } from "algolia-codegen";
+import type { AlgoliaCodegenConfig } from 'algolia-codegen';
 
 const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: {
-    "src/algolia/types.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "products",
-      prefix: "Algolia", // Optional
-      postfix: "Type", // Optional
+    'src/algolia/types.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'products',
+      prefix: 'Algolia', // Optional
+      postfix: 'Type', // Optional
     },
   },
 };
@@ -91,15 +99,15 @@ You can generate types for multiple indices:
 const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: {
-    "src/algolia/products.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "products",
+    'src/algolia/products.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'products',
     },
-    "src/algolia/users.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "users",
+    'src/algolia/users.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'users',
     },
   },
 };
@@ -114,17 +122,17 @@ const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: [
     {
-      "src/algolia/products.ts": {
-        appId: "YOUR_APP_ID",
-        searchKey: "YOUR_SEARCH_API_KEY",
-        indexName: "products",
+      'src/algolia/products.ts': {
+        appId: 'YOUR_APP_ID',
+        searchKey: 'YOUR_SEARCH_API_KEY',
+        indexName: 'products',
       },
     },
     {
-      "src/algolia/users.ts": {
-        appId: "YOUR_APP_ID",
-        searchKey: "YOUR_SEARCH_API_KEY",
-        indexName: "users",
+      'src/algolia/users.ts': {
+        appId: 'YOUR_APP_ID',
+        searchKey: 'YOUR_SEARCH_API_KEY',
+        indexName: 'users',
       },
     },
   ],
@@ -187,13 +195,13 @@ type AlgoliaCodegenGeneratorConfig = {
    - Fetches a sample record from the specified index
    - Analyzes the record structure and generates TypeScript types
    - Creates a single TypeScript file containing all types found in the index
-3. **Type Generation**: The generator automatically:
+4. **Type Generation**: The generator automatically:
    - Infers types from the sample record structure
    - Handles nested objects, arrays, and complex types
    - Detects and generates generic `IdValue<T>` types for Algolia's id-value pattern arrays
    - Generates proper TypeScript interfaces with JSDoc comments
    - Sorts types by dependencies for correct ordering
-4. **Error Handling**: Continues processing other files even if one fails, with detailed error messages
+5. **Error Handling**: Continues processing other files even if one fails, with detailed error messages
 
 Each generated file contains all types found in the index, including nested types, properly organized and sorted by dependencies.
 
@@ -213,44 +221,11 @@ Each generated file contains all types found in the index, including nested type
 
 ## Examples
 
-### Generated Type Example
-
-Given an Algolia record like:
-
-```json
-{
-  "objectID": "123",
-  "name": "Product Name",
-  "price": 99.99,
-  "tags": ["tag1", "tag2"],
-  "metadata": {
-    "category": "electronics",
-    "rating": 4.5
-  }
-}
-```
-
-The generator will create TypeScript types:
-
-```typescript
-/**
- * Generated TypeScript types for Algolia index: products
- * This file is auto-generated. Do not edit manually.
- */
-
-export interface AlgoliaHitType {
-  metadata: AlgoliaMetadataType;
-  name: string;
-  objectID: string;
-  price: number;
-  tags: string[];
-}
-
-export interface AlgoliaMetadataType {
-  category: string;
-  rating: number;
-}
-```
+See the [examples directory](./examples/) for comprehensive examples including:
+- Framework integrations (Next.js, React, Vue)
+- CI/CD integration (GitHub Actions)
+- Custom prefixes/postfixes
+- Multiple indices configuration
 
 ## Repository
 

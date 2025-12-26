@@ -8,9 +8,8 @@
     "declarationMap": false,
     "sourceMap": false,
     "outDir": "dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["vitest/globals"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src", "**/*.test.ts", "**/*.spec.ts"]
 }

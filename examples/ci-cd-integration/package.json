@@ -1,0 +1,12 @@
+{
+  "name": "ci-cd-integration-example",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "codegen": "algolia-codegen"
+  },
+  "devDependencies": {
+    "algolia-codegen": "0.1.3"
+  }
+}
+

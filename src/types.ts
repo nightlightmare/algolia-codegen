@@ -16,4 +16,3 @@ export type AlgoliaCodegenConfig = {
   overwrite: boolean;
   generates: InstanceOrArray<UrlSchema>;
 };
-

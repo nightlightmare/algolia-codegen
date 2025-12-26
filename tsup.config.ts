@@ -1,13 +1,13 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
-    cli: 'src/cli.ts'
+    cli: 'src/cli.ts',
   },
   format: ['esm', 'cjs'],
-  target: 'node18',
+  target: 'node20',
   dts: true,
   clean: true,
-  shims: false
-})
+  shims: false,
+});

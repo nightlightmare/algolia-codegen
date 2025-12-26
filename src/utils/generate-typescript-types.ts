@@ -46,9 +46,8 @@ class TypeGenerator {
         // Register IdValue type for generation
         this.idValueTypes.add(idValueTypeName);
         // Use generic type with value type parameter
-        const typeString = valueType.type !== 'string' 
-          ? `${idValueTypeName}<${valueType.type}>`
-          : idValueTypeName;
+        const typeString =
+          valueType.type !== 'string' ? `${idValueTypeName}<${valueType.type}>` : idValueTypeName;
         return {
           type: `${typeString}[]`,
           isOptional: false,
@@ -59,10 +58,11 @@ class TypeGenerator {
 
       // Check if all items are the same type
       const firstType = itemTypes[0];
-      const allSameType = itemTypes.every(t =>
-        t.type === firstType.type &&
-        !t.isArray &&
-        t.nestedTypes.size === firstType.nestedTypes.size
+      const allSameType = itemTypes.every(
+        (t) =>
+          t.type === firstType.type &&
+          !t.isArray &&
+          t.nestedTypes.size === firstType.nestedTypes.size
       );
 
       if (allSameType && !firstType.isArray) {
@@ -75,10 +75,8 @@ class TypeGenerator {
       }
 
       // Mixed types - use union
-      const uniqueTypes = Array.from(new Set(itemTypes.map(t => t.type)));
-      const unionType = uniqueTypes.length === 1
-        ? uniqueTypes[0]
-        : uniqueTypes.join(' | ');
+      const uniqueTypes = Array.from(new Set(itemTypes.map((t) => t.type)));
+      const unionType = uniqueTypes.length === 1 ? uniqueTypes[0] : uniqueTypes.join(' | ');
 
       return {
         type: `${unionType}[]`,
@@ -128,14 +126,17 @@ class TypeGenerator {
    * Check if an array follows the AlgoliaIdValue pattern
    */
   private isIdValuePattern(arr: unknown[]): boolean {
-    return arr.length > 0 &&
-      arr.every(item =>
-        typeof item === 'object' &&
-        item !== null &&
-        'id' in item &&
-        'value' in item &&
-        typeof (item as { id: unknown }).id === 'string'
-      );
+    return (
+      arr.length > 0 &&
+      arr.every(
+        (item) =>
+          typeof item === 'object' &&
+          item !== null &&
+          'id' in item &&
+          'value' in item &&
+          typeof (item as { id: unknown }).id === 'string'
+      )
+    );
   }
 
   /**
@@ -151,12 +152,12 @@ class TypeGenerator {
 
     // Convert camelCase or snake_case to PascalCase
     const parts = lastPart
-      .replace(/[\[\]]/g, '') // Remove array brackets
+      .replace(/[[\]]/g, '') // Remove array brackets
       .split(/[-_\s]+/)
       .filter(Boolean);
 
     const pascalCase = parts
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join('');
 
     // Special handling for known patterns
@@ -173,7 +174,11 @@ class TypeGenerator {
   /**
    * Generate TypeScript interface code
    */
-  private generateInterface(typeName: string, nestedTypes: Map<string, TypeInfo>, sampleObj: Record<string, unknown>): string {
+  private generateInterface(
+    typeName: string,
+    nestedTypes: Map<string, TypeInfo>,
+    sampleObj: Record<string, unknown>
+  ): string {
     const lines: string[] = [];
 
     // Add JSDoc comment
