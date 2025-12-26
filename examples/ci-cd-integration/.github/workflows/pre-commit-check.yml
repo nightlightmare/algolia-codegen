@@ -1,0 +1,45 @@
+name: Pre-commit Type Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  check-types:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Generate Algolia types
+        env:
+          ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
+          ALGOLIA_SEARCH_KEY: ${{ secrets.ALGOLIA_SEARCH_KEY }}
+        run: pnpm codegen
+      
+      - name: Check if types are up to date
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Generated types are out of date!"
+            echo "Please run 'pnpm codegen' and commit the changes."
+            git diff
+            exit 1
+          else
+            echo "✅ Generated types are up to date!"
+          fi
+

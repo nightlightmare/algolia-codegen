@@ -221,44 +221,11 @@ Each generated file contains all types found in the index, including nested type
 
 ## Examples
 
-### Generated Type Example
-
-Given an Algolia record like:
-
-```json
-{
-  "objectID": "123",
-  "name": "Product Name",
-  "price": 99.99,
-  "tags": ["tag1", "tag2"],
-  "metadata": {
-    "category": "electronics",
-    "rating": 4.5
-  }
-}
-```
-
-The generator will create TypeScript types:
-
-```typescript
-/**
- * Generated TypeScript types for Algolia index: products
- * This file is auto-generated. Do not edit manually.
- */
-
-export interface AlgoliaHitType {
-  metadata: AlgoliaMetadataType;
-  name: string;
-  objectID: string;
-  price: number;
-  tags: string[];
-}
-
-export interface AlgoliaMetadataType {
-  category: string;
-  rating: number;
-}
-```
+See the [examples directory](./examples/) for comprehensive examples including:
+- Framework integrations (Next.js, React, Vue)
+- CI/CD integration (GitHub Actions)
+- Custom prefixes/postfixes
+- Multiple indices configuration
 
 ## Repository
 
