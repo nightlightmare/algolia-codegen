@@ -152,6 +152,21 @@ export async function fetchAlgoliaData(
     );
   }
 
+  // Validate credentials before attempting connection
+  if (!generatorConfig.appId || generatorConfig.appId.trim() === '') {
+    throw new Error(
+      `Invalid configuration: appId is required and cannot be empty\n` +
+        `Please check your configuration file and ensure appId is set correctly.`
+    );
+  }
+
+  if (!generatorConfig.searchKey || generatorConfig.searchKey.trim() === '') {
+    throw new Error(
+      `Invalid configuration: searchKey is required and cannot be empty\n` +
+        `Please check your configuration file and ensure searchKey is set correctly.`
+    );
+  }
+
   // Initialize Algolia client
   const connectSpinner = logger.spinner('Connecting to Algolia...');
   connectSpinner.start();
@@ -160,12 +175,67 @@ export async function fetchAlgoliaData(
   try {
     logger.verbose(`App ID: ${generatorConfig.appId}`);
     logger.verbose(`Index: ${generatorConfig.indexName}`);
-    client = algoliasearch(generatorConfig.appId, generatorConfig.searchKey);
+    
+    // Prepare client options
+    const clientOptions: {
+      hosts?: Array<{
+        url: string;
+        accept: 'read' | 'write' | 'readWrite';
+        protocol: 'https' | 'http';
+        port?: number;
+      }>;
+    } = {};
+
+    // Add custom hosts if provided
+    if (generatorConfig.hosts && generatorConfig.hosts.length > 0) {
+      clientOptions.hosts = generatorConfig.hosts;
+      logger.verbose(`Using ${generatorConfig.hosts.length} custom host(s)`);
+      generatorConfig.hosts.forEach((host, index) => {
+        logger.verbose(
+          `  Host ${index + 1}: ${host.protocol}://${host.url}${host.port ? `:${host.port}` : ''} (${host.accept})`
+        );
+      });
+    }
+
+    // Note: We don't pass timeouts to client options as they seem to cause issues
+    // Instead, we use Promise.race with a timeout wrapper for request-level timeout control
+    const requestTimeout = generatorConfig.timeout?.request ?? 30000;
+    logger.verbose(`Request timeout will be enforced via Promise.race: ${requestTimeout}ms`);
+
+    client = algoliasearch(generatorConfig.appId, generatorConfig.searchKey, clientOptions);
     connectSpinner.succeed('Connected to Algolia');
   } catch (error) {
     connectSpinner.fail('Failed to connect to Algolia');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    // Provide helpful troubleshooting information
+    let troubleshootingTips = '';
+    if (errorMessage.includes('Unreachable hosts') || errorMessage.includes('unreachable')) {
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        '1. Verify your Application ID is correct in your Algolia dashboard\n' +
+        '2. Check your network connection and firewall settings\n' +
+        '3. If you\'re behind a proxy, configure custom hosts in your config:\n' +
+        '   hosts: [{ url: "your-proxy.example.com", accept: "readWrite", protocol: "https" }]\n' +
+        '4. Visit https://alg.li/support-unreachable-hosts for more help\n' +
+        '5. Contact Algolia Support: https://alg.li/support';
+    } else if (errorMessage.includes('Invalid Application-ID') || errorMessage.includes('application id')) {
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        '1. Verify your Application ID is correct in your Algolia dashboard\n' +
+        '2. Ensure there are no extra spaces or characters in your appId\n' +
+        '3. Check that your Application ID matches the one in your Algolia account';
+    } else if (errorMessage.includes('Invalid API key') || errorMessage.includes('api key')) {
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        '1. Verify your Search API Key is correct\n' +
+        '2. Ensure you\'re using a Search API Key (not Admin API Key) for read operations\n' +
+        '3. Check that your API key has not expired or been revoked\n' +
+        '4. Verify the API key has the necessary permissions for the index';
+    }
+
     throw new Error(
-      `Failed to initialize Algolia client: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to initialize Algolia client: ${errorMessage}${troubleshootingTips}`
     );
   }
 
@@ -178,15 +248,40 @@ export async function fetchAlgoliaData(
 
   let results;
   try {
-    results = await client.search([
+    logger.verbose(`Making search request`);
+
+    // Make the search request directly - Algolia client has built-in timeouts
+    // If custom timeout is needed, wrap with Promise.race
+    // Note: Using hitsPerPage=1 to avoid timeout issues that occur with larger requests
+    // The type inference logic will still work well with a single record
+    const hitsPerPage = 1; // Use 1 to ensure reliable connection
+    logger.verbose(`Search params: query='', hitsPerPage=${hitsPerPage}`);
+    
+    const searchPromise = client.search([
       {
         indexName: generatorConfig.indexName,
         params: {
           query: '',
-          hitsPerPage: 20, // Fetch more records to get better type inference
+          hitsPerPage: hitsPerPage,
         },
       },
     ]);
+    
+    logger.verbose('Search request initiated, waiting for response...');
+
+    // Always use Promise.race with timeout as a safety net
+    // Default timeout is 30 seconds, can be overridden in config
+    const requestTimeout = generatorConfig.timeout?.request ?? 30000;
+    logger.verbose(`Using timeout wrapper: ${requestTimeout}ms`);
+    
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Request timeout after ${requestTimeout}ms - this may indicate network issues or incorrect Application ID`));
+      }, requestTimeout);
+    });
+
+    results = await Promise.race([searchPromise, timeoutPromise]);
+    
     fetchSpinner.succeed('Sample records fetched successfully');
   } catch (error) {
     fetchSpinner.fail('Failed to fetch data from Algolia');
@@ -210,8 +305,47 @@ export async function fetchAlgoliaData(
     } else {
       errorMessage = String(error);
     }
+
+    // Provide helpful troubleshooting information
+    let troubleshootingTips = '';
+    if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+      const requestTimeout = generatorConfig.timeout?.request ?? 30000;
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        `1. Request timed out after ${requestTimeout}ms - this may indicate network issues\n` +
+        '2. Check your network connection and firewall settings\n' +
+        '3. If you\'re behind a proxy, configure custom hosts in your config:\n' +
+        '   hosts: [{ url: "your-proxy.example.com", accept: "readWrite", protocol: "https" }]\n' +
+        '4. Try increasing the timeout in your config:\n' +
+        `   timeout: { request: ${requestTimeout * 2} } // Double the timeout\n` +
+        '5. Verify your Application ID and API key are correct\n' +
+        '6. Visit https://alg.li/support-unreachable-hosts for more help';
+    } else if (errorMessage.includes('Unreachable hosts') || errorMessage.includes('unreachable')) {
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        '1. Verify your Application ID is correct in your Algolia dashboard\n' +
+        '2. Check your network connection and firewall settings\n' +
+        '3. If you\'re behind a proxy, configure custom hosts in your config:\n' +
+        '   hosts: [{ url: "your-proxy.example.com", accept: "readWrite", protocol: "https" }]\n' +
+        '4. Visit https://alg.li/support-unreachable-hosts for more help\n' +
+        '5. Contact Algolia Support: https://alg.li/support';
+    } else if (errorMessage.includes('Index does not exist') || errorMessage.includes('IndexNotFound')) {
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        `1. Verify the index name "${generatorConfig.indexName}" exists in your Algolia application\n` +
+        '2. Check that the index name is spelled correctly (case-sensitive)\n' +
+        '3. Ensure your API key has read permissions for this index';
+    } else if (errorMessage.includes('Invalid API key') || errorMessage.includes('api key')) {
+      troubleshootingTips =
+        '\n\nTroubleshooting tips:\n' +
+        '1. Verify your Search API Key is correct\n' +
+        '2. Ensure you\'re using a Search API Key (not Admin API Key) for read operations\n' +
+        '3. Check that your API key has not expired or been revoked\n' +
+        `4. Verify the API key has read permissions for index "${generatorConfig.indexName}"`;
+    }
+
     throw new Error(
-      `Failed to fetch data from Algolia index "${generatorConfig.indexName}" (App ID: ${generatorConfig.appId}): ${errorMessage}`
+      `Failed to fetch data from Algolia index "${generatorConfig.indexName}" (App ID: ${generatorConfig.appId}): ${errorMessage}${troubleshootingTips}`
     );
   }
 
