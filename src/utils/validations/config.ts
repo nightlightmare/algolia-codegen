@@ -1,4 +1,4 @@
-import type { AlgoliaCodegenConfig, UrlSchema } from '../../types.js';
+import type { AlgoliaCodegenConfig } from '../../types.js';
 import { validateUrlSchema } from './url-schema.js';
 
 /**
