@@ -1,5 +1,13 @@
 # Algolia Type Generator
 
+[![npm version](https://img.shields.io/npm/v/algolia-codegen.svg?style=flat-square)](https://www.npmjs.com/package/algolia-codegen)
+[![npm downloads](https://img.shields.io/npm/dm/algolia-codegen.svg?style=flat-square)](https://www.npmjs.com/package/algolia-codegen)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/algolia-codegen?style=flat-square)](https://bundlephobia.com/package/algolia-codegen)
+[![GitHub stars](https://img.shields.io/github/stars/nightlightmare/algolia-codegen.svg?style=flat-square&logo=github)](https://github.com/nightlightmare/algolia-codegen)
+[![GitHub issues](https://img.shields.io/github/issues/nightlightmare/algolia-codegen.svg?style=flat-square&logo=github)](https://github.com/nightlightmare/algolia-codegen/issues)
+[![GitHub license](https://img.shields.io/github/license/nightlightmare/algolia-codegen.svg?style=flat-square)](https://github.com/nightlightmare/algolia-codegen/blob/main/LICENSE)
+[![Node.js version](https://img.shields.io/node/v/algolia-codegen.svg?style=flat-square)](https://nodejs.org/)
+
 This script automatically generates TypeScript types from your Algolia indices by fetching sample records and analyzing their structure. It supports multiple indices and flexible configuration through a config file.
 
 **Repository**: [https://github.com/nightlightmare/algolia-codegen](https://github.com/nightlightmare/algolia-codegen)
