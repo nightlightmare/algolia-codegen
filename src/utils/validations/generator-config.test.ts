@@ -156,5 +156,78 @@ describe('validateGeneratorConfig', () => {
 
     expect(() => validateGeneratorConfig(validConfig, 'test-path')).not.toThrow();
   });
+
+  it('should include path in error messages', () => {
+    const invalidConfig = {
+      appId: 'test-app-id',
+      searchKey: 'test-search-key',
+      // missing indexName
+    };
+
+    expect(() => validateGeneratorConfig(invalidConfig, 'config[generates]["file.ts"]')).toThrow(
+      'Path: config[generates]["file.ts"]'
+    );
+  });
+
+  it('should include received type in error messages', () => {
+    const invalidConfig = {
+      appId: 123,
+      searchKey: 'test-search-key',
+      indexName: 'test-index',
+    };
+
+    expect(() => validateGeneratorConfig(invalidConfig, 'test-path')).toThrow(
+      "Received: number"
+    );
+  });
+
+  it('should validate empty string values for required fields', () => {
+    // Empty strings are technically valid strings, though not recommended
+    const configWithEmptyStrings = {
+      appId: '',
+      searchKey: '',
+      indexName: '',
+    };
+
+    expect(() => validateGeneratorConfig(configWithEmptyStrings, 'test-path')).not.toThrow();
+  });
+
+  it('should validate empty string values for optional fields', () => {
+    const configWithEmptyOptional = {
+      appId: 'test-app-id',
+      searchKey: 'test-search-key',
+      indexName: 'test-index',
+      prefix: '',
+      postfix: '',
+    };
+
+    expect(() => validateGeneratorConfig(configWithEmptyOptional, 'test-path')).not.toThrow();
+  });
+
+  it('should throw error if prefix is null', () => {
+    const invalidConfig = {
+      appId: 'test-app-id',
+      searchKey: 'test-search-key',
+      indexName: 'test-index',
+      prefix: null,
+    };
+
+    expect(() => validateGeneratorConfig(invalidConfig, 'test-path')).toThrow(
+      "Invalid generator config: 'prefix' must be a string or undefined"
+    );
+  });
+
+  it('should throw error if postfix is null', () => {
+    const invalidConfig = {
+      appId: 'test-app-id',
+      searchKey: 'test-search-key',
+      indexName: 'test-index',
+      postfix: null,
+    };
+
+    expect(() => validateGeneratorConfig(invalidConfig, 'test-path')).toThrow(
+      "Invalid generator config: 'postfix' must be a string or undefined"
+    );
+  });
 });
 

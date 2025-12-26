@@ -126,7 +126,95 @@ describe('validateConfig', () => {
       ],
     };
 
-    expect(() => validateConfig(invalidConfig, 'test-path')).toThrow();
+    expect(() => validateConfig(invalidConfig, 'test-path')).toThrow(
+      'Invalid generates entry: must be an object'
+    );
+  });
+
+  it('should include config path in error messages', () => {
+    const invalidConfig = {
+      overwrite: true,
+      generates: 'invalid',
+    };
+
+    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow(
+      'Config file: config.json'
+    );
+  });
+
+  it('should include config path and received type in overwrite error', () => {
+    const invalidConfig = {
+      overwrite: 'not-a-boolean',
+      generates: {
+        'src/types/algolia.ts': {
+          appId: 'test-app-id',
+          searchKey: 'test-search-key',
+          indexName: 'test-index',
+        },
+      },
+    };
+
+    expect(() => validateConfig(invalidConfig, 'my-config.json')).toThrow(
+      'Config file: my-config.json'
+    );
+    expect(() => validateConfig(invalidConfig, 'my-config.json')).toThrow(
+      "Received: string"
+    );
+  });
+
+  it('should validate empty generates array', () => {
+    const validConfig = {
+      overwrite: true,
+      generates: [],
+    };
+
+    expect(() => validateConfig(validConfig, 'test-path')).not.toThrow();
+  });
+
+  it('should validate empty generates object', () => {
+    const validConfig = {
+      overwrite: false,
+      generates: {},
+    };
+
+    expect(() => validateConfig(validConfig, 'test-path')).not.toThrow();
+  });
+
+  it('should include path in generates array item errors', () => {
+    const invalidConfig = {
+      overwrite: true,
+      generates: [
+        {
+          'src/types/algolia.ts': {
+            appId: 'test-app-id',
+            searchKey: 'test-search-key',
+            indexName: 'test-index',
+          },
+        },
+        null,
+      ],
+    };
+
+    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow(
+      'config.json[generates][1]'
+    );
+  });
+
+  it('should include path in generates object errors', () => {
+    const invalidConfig = {
+      overwrite: true,
+      generates: {
+        'src/types/algolia.ts': {
+          appId: 123, // invalid type
+          searchKey: 'test-search-key',
+          indexName: 'test-index',
+        },
+      },
+    };
+
+    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow(
+      'config.json[generates]["src/types/algolia.ts"]'
+    );
   });
 });
 

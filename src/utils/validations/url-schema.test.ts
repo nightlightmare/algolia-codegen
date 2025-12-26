@@ -79,5 +79,56 @@ describe('validateUrlSchema', () => {
 
     expect(() => validateUrlSchema(emptySchema, 'test-path')).not.toThrow();
   });
+
+  it('should include path in error messages', () => {
+    const invalidSchema = null;
+
+    expect(() => validateUrlSchema(invalidSchema, 'config[generates]')).toThrow(
+      'Path: config[generates]'
+    );
+  });
+
+  it('should include file path in generator config errors', () => {
+    const invalidSchema = {
+      'src/types/algolia.ts': {
+        appId: 'test-app-id',
+        // missing searchKey and indexName
+      },
+    };
+
+    expect(() => validateUrlSchema(invalidSchema, 'config[generates]')).toThrow(
+      'config[generates]["src/types/algolia.ts"]'
+    );
+  });
+
+  it('should validate schema with empty string file path', () => {
+    const schemaWithEmptyPath: UrlSchema = {
+      '': {
+        appId: 'test-app-id',
+        searchKey: 'test-search-key',
+        indexName: 'test-index',
+      },
+    };
+
+    // Empty string is technically a valid key, though not recommended
+    expect(() => validateUrlSchema(schemaWithEmptyPath, 'test-path')).not.toThrow();
+  });
+
+  it('should handle special characters in file paths', () => {
+    const schemaWithSpecialChars: UrlSchema = {
+      'src/types/algolia-v2.ts': {
+        appId: 'test-app-id',
+        searchKey: 'test-search-key',
+        indexName: 'test-index',
+      },
+      'src/types/algolia.test.ts': {
+        appId: 'test-app-id-2',
+        searchKey: 'test-search-key-2',
+        indexName: 'test-index-2',
+      },
+    };
+
+    expect(() => validateUrlSchema(schemaWithSpecialChars, 'test-path')).not.toThrow();
+  });
 });
 
