@@ -14,7 +14,7 @@ export async function loadTypeScriptConfig(resolvedPath: string): Promise<any> {
   const result = esbuild.transformSync(source, {
     loader: 'ts',
     format: 'esm',
-    target: 'node18',
+    target: 'node20',
     sourcefile: resolvedPath,
   });
   

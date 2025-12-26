@@ -14,7 +14,7 @@ This script automatically generates TypeScript types from your Algolia indices b
 
 ## Prerequisites
 
-- Node.js >= 18
+- Node.js >= 20
 - Algolia account with at least one index
 
 ## Installation
