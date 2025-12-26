@@ -1,6 +1,6 @@
 {
   "name": "algolia-codegen",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Generate TypeScript types from Algolia indices",
   "license": "MIT",
   "author": "nightlightmare",
