@@ -8,18 +8,31 @@ interface TypeInfo {
   nestedTypes: Map<string, TypeInfo>;
 }
 
+/**
+ * Metadata about possible values for array fields
+ */
+export interface ArrayValuesMetadata {
+  [fieldPath: string]: {
+    values: Set<string | number>;
+    isStringArray: boolean;
+  };
+}
+
 class TypeGenerator {
   private typeMap = new Map<string, string>();
   private generatedTypes = new Set<string>();
   private idValueTypes = new Set<string>();
+  private enumTypes = new Map<string, string>(); // Map of field path to enum type name
   private prefix: string;
   private postfix: string;
   private indexName: string;
+  private metadata: ArrayValuesMetadata;
 
-  constructor(config: AlgoliaCodegenGeneratorConfig) {
+  constructor(config: AlgoliaCodegenGeneratorConfig, metadata: ArrayValuesMetadata = {}) {
     this.prefix = config.prefix || '';
     this.postfix = config.postfix || '';
     this.indexName = config.indexName;
+    this.metadata = metadata;
   }
 
   /**
@@ -66,6 +79,38 @@ class TypeGenerator {
       );
 
       if (allSameType && !firstType.isArray) {
+        // Check if we have metadata for this field path to generate Enum
+        const fieldPath = path.join('.');
+        const enumMetadata = this.metadata[fieldPath];
+
+        if (enumMetadata && firstType.type === 'string' && enumMetadata.isStringArray) {
+          // Generate Enum type for this field
+          const enumTypeName = this.generateEnumTypeName(path);
+          if (!this.enumTypes.has(fieldPath)) {
+            this.enumTypes.set(fieldPath, enumTypeName);
+            this.generateEnumType(enumTypeName, Array.from(enumMetadata.values) as string[]);
+          }
+          return {
+            type: `${enumTypeName}[]`,
+            isOptional: false,
+            isArray: true,
+            nestedTypes: new Map(),
+          };
+        } else if (enumMetadata && firstType.type === 'number' && !enumMetadata.isStringArray) {
+          // Generate Enum type for number array
+          const enumTypeName = this.generateEnumTypeName(path);
+          if (!this.enumTypes.has(fieldPath)) {
+            this.enumTypes.set(fieldPath, enumTypeName);
+            this.generateEnumType(enumTypeName, Array.from(enumMetadata.values) as number[]);
+          }
+          return {
+            type: `${enumTypeName}[]`,
+            isOptional: false,
+            isArray: true,
+            nestedTypes: new Map(),
+          };
+        }
+
         return {
           type: `${firstType.type}[]`,
           isOptional: false,
@@ -137,6 +182,83 @@ class TypeGenerator {
           typeof (item as { id: unknown }).id === 'string'
       )
     );
+  }
+
+  /**
+   * Generate an Enum type name from a path
+   */
+  private generateEnumTypeName(path: string[]): string {
+    if (path.length === 0) {
+      return `${this.prefix}Enum${this.postfix}`;
+    }
+
+    // Get the last meaningful part of the path
+    const lastPart = path[path.length - 1];
+
+    // Convert camelCase or snake_case to PascalCase
+    const parts = lastPart
+      .replace(/[[\]]/g, '') // Remove array brackets
+      .split(/[-_\s]+/)
+      .filter(Boolean);
+
+    const pascalCase = parts
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join('');
+
+    return `${this.prefix}${pascalCase}Enum${this.postfix}`;
+  }
+
+  /**
+   * Generate Enum type definition
+   */
+  private generateEnumType(typeName: string, values: (string | number)[]): void {
+    const lines: string[] = [];
+
+    lines.push('/**');
+    lines.push(` * Enum for ${typeName}`);
+    lines.push(` * Generated from ${values.length} unique values found in Algolia index`);
+    lines.push(' */');
+    lines.push(`export enum ${typeName} {`);
+
+    const usedKeys = new Set<string>();
+    for (const value of values) {
+      // Convert value to valid enum key
+      let key: string;
+      if (typeof value === 'string') {
+        // Convert string to valid enum key (uppercase, replace spaces/special chars with underscores)
+        key = value
+          .toUpperCase()
+          .replace(/[^A-Z0-9_]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '');
+
+        // If key is empty or starts with number, prefix it
+        if (!key || /^\d/.test(key)) {
+          key = `VALUE_${key || 'EMPTY'}`;
+        }
+      } else {
+        key = `VALUE_${value}`;
+      }
+
+      // Ensure unique keys
+      let finalKey = key;
+      let counter = 1;
+      while (usedKeys.has(finalKey)) {
+        finalKey = `${key}_${counter}`;
+        counter++;
+      }
+      usedKeys.add(finalKey);
+
+      const valueStr =
+        typeof value === 'string' ? `'${value.replace(/'/g, "\\'")}'` : String(value);
+      lines.push(`  ${finalKey} = ${valueStr},`);
+    }
+
+    lines.push('}');
+    lines.push('');
+
+    this.typeMap.set(typeName, lines.join('\n'));
+    this.generatedTypes.add(typeName);
   }
 
   /**
@@ -347,6 +469,15 @@ class TypeGenerator {
       lines.push(this.generateIdValueType(idValueTypeName));
     }
 
+    // Add Enum types (they don't depend on other types)
+    const enumTypeNames = Array.from(this.enumTypes.values());
+    for (const enumTypeName of enumTypeNames) {
+      const enumCode = this.typeMap.get(enumTypeName);
+      if (enumCode) {
+        lines.push(enumCode);
+      }
+    }
+
     // Add all types in dependency order
     for (const typeName of sortedTypes) {
       const typeCode = this.typeMap.get(typeName);
@@ -364,8 +495,9 @@ class TypeGenerator {
  */
 export function generateTypeScriptTypes(
   sampleHit: Record<string, unknown>,
-  config: AlgoliaCodegenGeneratorConfig
+  config: AlgoliaCodegenGeneratorConfig,
+  metadata: ArrayValuesMetadata = {}
 ): string {
-  const generator = new TypeGenerator(config);
+  const generator = new TypeGenerator(config, metadata);
   return generator.generateAllTypes(sampleHit);
 }

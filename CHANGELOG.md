@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2024
+
+### Added
+
+- **Enum type generation**: Automatically generates TypeScript Enum types for string/number arrays with known values (up to 100 unique values)
+- **Enhanced type inference**: Fetches 20 sample records instead of 1 to get better type inference, especially for fields with empty arrays
+- **Smart array merging**: Merges data from multiple records to ensure proper type detection even when some records have empty arrays
+- **Value collection**: Collects all unique values from all records for array fields to generate comprehensive Enum types
+
+### Changed
+
+- Improved type generation for arrays - now uses Enum types instead of `string[]` or `number[]` when all possible values are known
+- Enhanced logging to show number of records fetched and fields with Enum generation
+
+### Fixed
+
+- Fixed issue where empty arrays resulted in `unknown[]` type - now properly infers types from records with populated arrays
+- Improved handling of nested objects with array fields
+
 ## [0.1.4] - 2024
 
 ### Added
@@ -87,6 +106,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration validation utilities
 - Export of validation functions for advanced usage
 
+[0.1.5]: https://github.com/nightlightmare/algolia-codegen/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/nightlightmare/algolia-codegen/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/nightlightmare/algolia-codegen/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/nightlightmare/algolia-codegen/compare/v0.1.1...v0.1.2

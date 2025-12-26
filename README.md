@@ -224,8 +224,11 @@ type AlgoliaCodegenGeneratorConfig = {
    - Analyzes the record structure and generates TypeScript types
    - Creates a single TypeScript file containing all types found in the index
 4. **Type Generation**: The generator automatically:
+   - Fetches 20 sample records from each index for better type inference
+   - Merges data from multiple records to ensure proper type detection
    - Infers types from the sample record structure
    - Handles nested objects, arrays, and complex types
+   - **Generates Enum types** for string/number arrays with known values (up to 100 unique values)
    - Detects and generates generic `IdValue<T>` types for Algolia's id-value pattern arrays
    - Generates proper TypeScript interfaces with JSDoc comments
    - Sorts types by dependencies for correct ordering
@@ -243,9 +246,33 @@ Each generated file contains all types found in the index, including nested type
 - Each generated file contains all types found in the index (including nested types) in a single file
 - Types are automatically sorted by dependencies to ensure correct ordering
 - The generator handles arrays, nested objects, optional fields, and null values
+- **Enum types are automatically generated** for string/number arrays when all possible values are known (up to 100 unique values)
+- The script fetches 20 sample records to improve type inference, especially for fields that may be empty in some records
 - Automatically detects Algolia's `IdValue` pattern (arrays of objects with `id` and `value` properties) and generates generic types
 - The project uses ES Modules - all local imports use `.js` extensions
 - The library is compiled to both ESM and CommonJS formats for maximum compatibility
+
+## Enum Type Generation
+
+When the generator finds string or number arrays with a limited set of known values (up to 100 unique values), it automatically generates TypeScript Enum types instead of `string[]` or `number[]`. This provides better type safety and autocomplete support.
+
+Example:
+
+If your Algolia records contain a `facilityOnSite` field with values like `['wifi', 'parking', 'restaurant']`, the generator will create:
+
+```typescript
+export enum ParkInfoFacilityOnSiteEnum {
+  WIFI = 'wifi',
+  PARKING = 'parking',
+  RESTAURANT = 'restaurant',
+}
+
+interface ParkInfo {
+  facilityOnSite: ParkInfoFacilityOnSiteEnum[];
+}
+```
+
+This ensures type safety and prevents typos when working with these values in your code.
 
 ## Examples
 

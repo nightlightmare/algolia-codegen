@@ -352,7 +352,7 @@ describe('fetchAlgoliaData', () => {
 
     await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
-    expect(generateTypeScriptTypes).toHaveBeenCalledWith(mockSampleHit, baseConfig);
+    expect(generateTypeScriptTypes).toHaveBeenCalledWith(mockSampleHit, baseConfig, {});
     expect(writeFileSync).toHaveBeenCalledWith(resolvedPath, generatedContent, 'utf-8');
   });
 
@@ -373,7 +373,7 @@ describe('fetchAlgoliaData', () => {
         indexName: 'test-index',
         params: {
           query: '',
-          hitsPerPage: 1,
+          hitsPerPage: 20,
         },
       },
     ]);
@@ -395,9 +395,11 @@ describe('fetchAlgoliaData', () => {
     expect(mockLogger.spinner).toHaveBeenCalledWith('Connecting to Algolia...');
     expect(mockLogger.verbose).toHaveBeenCalledWith(`App ID: ${baseConfig.appId}`);
     expect(mockLogger.spinner).toHaveBeenCalledWith(
-      `Fetching sample record from index: ${baseConfig.indexName}`
+      `Fetching sample records from index: ${baseConfig.indexName}`
     );
-    expect(mockLogger.verbose).toHaveBeenCalledWith(`ObjectID: ${mockSampleHit.objectID}`);
+    expect(mockLogger.verbose).toHaveBeenCalledWith(`Fetched 1 records`);
+    expect(mockLogger.verbose).toHaveBeenCalledWith(`ObjectIDs: ${mockSampleHit.objectID}`);
+    expect(mockLogger.verbose).toHaveBeenCalledWith('Merged records for type generation');
     expect(mockLogger.success).toHaveBeenCalledWith(`Generated file: ${filePath}`);
   });
 
@@ -422,7 +424,9 @@ describe('fetchAlgoliaData', () => {
 
     await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
-    expect(mockLogger.verbose).toHaveBeenCalledWith('ObjectID: N/A');
+    expect(mockLogger.verbose).toHaveBeenCalledWith('Fetched 1 records');
+    expect(mockLogger.verbose).toHaveBeenCalledWith('ObjectIDs: N/A');
+    expect(mockLogger.verbose).toHaveBeenCalledWith('Merged records for type generation');
   });
 
   it('should initialize Algolia client with correct credentials', async () => {
@@ -457,6 +461,6 @@ describe('fetchAlgoliaData', () => {
 
     await fetchAlgoliaData(filePath, config, false, mockLogger);
 
-    expect(generateTypeScriptTypes).toHaveBeenCalledWith(mockSampleHit, config);
+    expect(generateTypeScriptTypes).toHaveBeenCalledWith(mockSampleHit, config, {});
   });
 });
