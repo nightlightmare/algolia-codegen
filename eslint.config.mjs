@@ -17,6 +17,13 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.*', 'examples/**'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'coverage/**',
+      '*.config.*',
+      'examples/**',
+      'test-config-invalid.js',
+    ],
   }
 );

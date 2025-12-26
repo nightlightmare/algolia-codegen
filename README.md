@@ -149,12 +149,40 @@ After installation, you can use the CLI command:
 algolia-codegen
 ```
 
-Or specify a custom config file:
+#### Options
+
+- `-c, --config <path>` - Specify a custom config file path
+- `-v, --verbose` - Enable verbose output (shows detailed logging)
+- `--dry-run` - Simulate execution without writing files (useful for testing)
+
+#### Examples
+
+Specify a custom config file:
 
 ```bash
 algolia-codegen --config path/to/config.ts
 # or
 algolia-codegen -c path/to/config.ts
+```
+
+Enable verbose output:
+
+```bash
+algolia-codegen --verbose
+# or
+algolia-codegen -v
+```
+
+Run in dry-run mode (no files will be written):
+
+```bash
+algolia-codegen --dry-run
+```
+
+Combine options:
+
+```bash
+algolia-codegen --config custom-config.ts --verbose --dry-run
 ```
 
 Or if installed locally:
@@ -222,6 +250,7 @@ Each generated file contains all types found in the index, including nested type
 ## Examples
 
 See the [examples directory](./examples/) for comprehensive examples including:
+
 - Framework integrations (Next.js, React, Vue)
 - CI/CD integration (GitHub Actions)
 - Custom prefixes/postfixes

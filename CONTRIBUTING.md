@@ -28,17 +28,20 @@ Before you begin, ensure you have the following installed:
 1. **Fork the repository** on GitHub
 
 2. **Clone your fork** locally:
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/algolia-codegen.git
    cd algolia-codegen
    ```
 
 3. **Add the upstream remote**:
+
    ```bash
    git remote add upstream https://github.com/nightlightmare/algolia-codegen.git
    ```
 
 4. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
@@ -64,6 +67,7 @@ git checkout -b docs/your-documentation-update
 ```
 
 Use descriptive branch names:
+
 - `feature/` - for new features
 - `fix/` - for bug fixes
 - `docs/` - for documentation updates
@@ -88,6 +92,7 @@ Write clear and descriptive commit messages:
 - Reference issues and pull requests liberally after the first line
 
 Examples:
+
 ```
 feat: add support for custom type prefixes
 
@@ -185,6 +190,7 @@ pnpm test:coverage
 ### Coverage Requirements
 
 The project maintains minimum coverage thresholds:
+
 - **Lines**: 70%
 - **Functions**: 70%
 - **Branches**: 70%
@@ -205,6 +211,7 @@ pnpm dev
 ```
 
 The build process:
+
 - Compiles TypeScript to JavaScript
 - Generates type definitions (`.d.ts` files)
 - Outputs both ESM (`.js`) and CommonJS (`.cjs`) formats
@@ -228,12 +235,14 @@ Ensure you've completed the following:
 ### Pull Request Process
 
 1. **Update your branch** with the latest changes from upstream:
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. **Push your changes** to your fork:
+
    ```bash
    git push origin your-branch-name
    ```
@@ -341,4 +350,3 @@ If you have questions or need help:
 - Respect different viewpoints and experiences
 
 Thank you for contributing to Algolia Codegen! 🎉
-

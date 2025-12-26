@@ -18,7 +18,13 @@ program
   .name('algolia-codegen')
   .description('Generate TypeScript types from Algolia index')
   .option('-c, --config <path>', 'Config file path')
+  .option('-v, --verbose', 'Enable verbose output')
+  .option('--dry-run', 'Simulate execution without writing files')
   .action(async (options) => {
-    await main(options.config);
+    await main({
+      configPath: options.config,
+      verbose: options.verbose ?? false,
+      dryRun: options.dryRun ?? false,
+    });
   })
   .parse();

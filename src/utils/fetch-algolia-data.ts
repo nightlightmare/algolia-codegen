@@ -3,6 +3,7 @@ import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import type { AlgoliaCodegenGeneratorConfig } from '../types.js';
 import { generateTypeScriptTypes } from './generate-typescript-types.js';
+import Logger from './logger.js';
 
 /**
  * Fetches data from Algolia for a given generator config and generates TypeScript types
@@ -10,12 +11,14 @@ import { generateTypeScriptTypes } from './generate-typescript-types.js';
 export async function fetchAlgoliaData(
   filePath: string,
   generatorConfig: AlgoliaCodegenGeneratorConfig,
-  overwrite: boolean
+  overwrite: boolean,
+  logger: Logger
 ): Promise<void> {
-  console.log(`\nProcessing file: ${filePath}`);
+  logger.info(`Processing file: ${filePath}`);
 
   // Resolve file path relative to current working directory
   const resolvedPath = resolve(process.cwd(), filePath);
+  logger.verbose(`Resolved path: ${resolvedPath}`);
 
   // Check if file exists and overwrite is false
   if (existsSync(resolvedPath) && !overwrite) {
@@ -25,21 +28,29 @@ export async function fetchAlgoliaData(
     );
   }
 
-  console.log(`Connecting to Algolia...`);
-  console.log(`App ID: ${generatorConfig.appId}`);
+  // Initialize Algolia client
+  const connectSpinner = logger.spinner('Connecting to Algolia...');
+  connectSpinner.start();
 
   let client;
   try {
+    logger.verbose(`App ID: ${generatorConfig.appId}`);
+    logger.verbose(`Index: ${generatorConfig.indexName}`);
     client = algoliasearch(generatorConfig.appId, generatorConfig.searchKey);
+    connectSpinner.succeed('Connected to Algolia');
   } catch (error) {
+    connectSpinner.fail('Failed to connect to Algolia');
     throw new Error(
       `Failed to initialize Algolia client: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 
-  console.log(`Fetching sample record from index: ${generatorConfig.indexName}`);
-
   // Fetch a sample record
+  const fetchSpinner = logger.spinner(
+    `Fetching sample record from index: ${generatorConfig.indexName}`
+  );
+  fetchSpinner.start();
+
   let results;
   try {
     results = await client.search([
@@ -51,7 +62,9 @@ export async function fetchAlgoliaData(
         },
       },
     ]);
+    fetchSpinner.succeed('Sample record fetched successfully');
   } catch (error) {
+    fetchSpinner.fail('Failed to fetch data from Algolia');
     let errorMessage: string;
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -88,19 +101,32 @@ export async function fetchAlgoliaData(
   }
 
   const sampleHit = result.hits[0] as Record<string, unknown>;
-  console.log('Sample record fetched successfully');
-  console.log(`ObjectID: ${sampleHit.objectID || 'N/A'}`);
+  logger.verbose(`ObjectID: ${sampleHit.objectID || 'N/A'}`);
 
   // Generate TypeScript types from the sample hit
+  const generateSpinner = logger.spinner('Generating TypeScript types...');
+  generateSpinner.start();
+
   const fileContent = generateTypeScriptTypes(sampleHit, generatorConfig);
+  generateSpinner.succeed('TypeScript types generated');
 
   // Ensure directory exists
   const dir = dirname(resolvedPath);
   if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+    if (!logger.isDryRun) {
+      mkdirSync(dir, { recursive: true });
+      logger.verbose(`Created directory: ${dir}`);
+    } else {
+      logger.dryRun(`Would create directory: ${dir}`);
+    }
   }
 
-  // Write file
-  writeFileSync(resolvedPath, fileContent, 'utf-8');
-  console.log(`Generated file: ${filePath}`);
+  // Write file (or simulate in dry-run mode)
+  if (logger.isDryRun) {
+    logger.dryRun(`Would write file: ${filePath}`);
+    logger.verbose(`File content length: ${fileContent.length} characters`);
+  } else {
+    writeFileSync(resolvedPath, fileContent, 'utf-8');
+    logger.success(`Generated file: ${filePath}`);
+  }
 }
