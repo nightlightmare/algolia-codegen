@@ -313,4 +313,3 @@ describe('generateTypeScriptTypes', () => {
     expect(bananaIndex).toBeLessThan(zebraIndex);
   });
 });
-

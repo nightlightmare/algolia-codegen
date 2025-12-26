@@ -12,7 +12,7 @@ if (existsSync(envPath)) {
   loadDotenv({ path: envPath });
 }
 
-const program = new Command()
+const program = new Command();
 
 program
   .name('algolia-codegen')

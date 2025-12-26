@@ -131,4 +131,3 @@ describe('validateUrlSchema', () => {
     expect(() => validateUrlSchema(schemaWithSpecialChars, 'test-path')).not.toThrow();
   });
 });
-

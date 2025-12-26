@@ -9,10 +9,7 @@ export function validateConfig(
   configPath: string
 ): asserts config is AlgoliaCodegenConfig {
   if (typeof config !== 'object' || config === null || Array.isArray(config)) {
-    throw new Error(
-      `Invalid config: must be an object\n` +
-      `Config file: ${configPath}`
-    );
+    throw new Error(`Invalid config: must be an object\n` + `Config file: ${configPath}`);
   }
 
   const cfg = config as Record<string, unknown>;
@@ -20,23 +17,21 @@ export function validateConfig(
   // Validate overwrite
   if (!('overwrite' in cfg)) {
     throw new Error(
-      `Invalid config: missing required property 'overwrite'\n` +
-      `Config file: ${configPath}`
+      `Invalid config: missing required property 'overwrite'\n` + `Config file: ${configPath}`
     );
   }
   if (typeof cfg.overwrite !== 'boolean') {
     throw new Error(
       `Invalid config: 'overwrite' must be a boolean\n` +
-      `Config file: ${configPath}\n` +
-      `Received: ${typeof cfg.overwrite}`
+        `Config file: ${configPath}\n` +
+        `Received: ${typeof cfg.overwrite}`
     );
   }
 
   // Validate generates
   if (!('generates' in cfg)) {
     throw new Error(
-      `Invalid config: missing required property 'generates'\n` +
-      `Config file: ${configPath}`
+      `Invalid config: missing required property 'generates'\n` + `Config file: ${configPath}`
     );
   }
 
@@ -54,9 +49,8 @@ export function validateConfig(
   } else {
     throw new Error(
       `Invalid config: 'generates' must be an object or an array of objects\n` +
-      `Config file: ${configPath}\n` +
-      `Received: ${typeof generates}`
+        `Config file: ${configPath}\n` +
+        `Received: ${typeof generates}`
     );
   }
 }
-

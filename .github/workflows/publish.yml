@@ -35,9 +35,9 @@ jobs:
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           PACKAGE_NAME=$(node -p "require('./package.json').name")
-          
+
           echo "Checking if version $PACKAGE_VERSION of $PACKAGE_NAME is already published..."
-          
+
           # Check if package exists and version is published
           if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version > /dev/null 2>&1; then
             echo "Version $PACKAGE_VERSION is already published!"
@@ -66,4 +66,3 @@ jobs:
         run: |
           echo "::warning::Version $(node -p "require('./package.json').version") is already published. Skipping publication."
           exit 0
-

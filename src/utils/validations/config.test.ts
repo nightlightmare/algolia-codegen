@@ -43,18 +43,14 @@ describe('validateConfig', () => {
   });
 
   it('should throw error if config is not an object', () => {
-    expect(() => validateConfig(null, 'test-path')).toThrow(
-      'Invalid config: must be an object'
-    );
+    expect(() => validateConfig(null, 'test-path')).toThrow('Invalid config: must be an object');
     expect(() => validateConfig(undefined, 'test-path')).toThrow(
       'Invalid config: must be an object'
     );
     expect(() => validateConfig('string', 'test-path')).toThrow(
       'Invalid config: must be an object'
     );
-    expect(() => validateConfig([], 'test-path')).toThrow(
-      'Invalid config: must be an object'
-    );
+    expect(() => validateConfig([], 'test-path')).toThrow('Invalid config: must be an object');
   });
 
   it('should throw error if overwrite is missing', () => {
@@ -137,9 +133,7 @@ describe('validateConfig', () => {
       generates: 'invalid',
     };
 
-    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow(
-      'Config file: config.json'
-    );
+    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow('Config file: config.json');
   });
 
   it('should include config path and received type in overwrite error', () => {
@@ -157,9 +151,7 @@ describe('validateConfig', () => {
     expect(() => validateConfig(invalidConfig, 'my-config.json')).toThrow(
       'Config file: my-config.json'
     );
-    expect(() => validateConfig(invalidConfig, 'my-config.json')).toThrow(
-      "Received: string"
-    );
+    expect(() => validateConfig(invalidConfig, 'my-config.json')).toThrow('Received: string');
   });
 
   it('should validate empty generates array', () => {
@@ -195,9 +187,7 @@ describe('validateConfig', () => {
       ],
     };
 
-    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow(
-      'config.json[generates][1]'
-    );
+    expect(() => validateConfig(invalidConfig, 'config.json')).toThrow('config.json[generates][1]');
   });
 
   it('should include path in generates object errors', () => {
@@ -217,4 +207,3 @@ describe('validateConfig', () => {
     );
   });
 });
-

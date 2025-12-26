@@ -176,9 +176,7 @@ describe('validateGeneratorConfig', () => {
       indexName: 'test-index',
     };
 
-    expect(() => validateGeneratorConfig(invalidConfig, 'test-path')).toThrow(
-      "Received: number"
-    );
+    expect(() => validateGeneratorConfig(invalidConfig, 'test-path')).toThrow('Received: number');
   });
 
   it('should validate empty string values for required fields', () => {
@@ -230,4 +228,3 @@ describe('validateGeneratorConfig', () => {
     );
   });
 });
-

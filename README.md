@@ -38,17 +38,17 @@ yarn add algolia-codegen
 1. Create a configuration file named `algolia-codegen.ts` (or `.js`) in your project root:
 
 ```typescript
-import type { AlgoliaCodegenConfig } from "algolia-codegen";
+import type { AlgoliaCodegenConfig } from 'algolia-codegen';
 
 const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: {
-    "src/algolia/types.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "products",
-      prefix: "Algolia", // Optional
-      postfix: "Type", // Optional
+    'src/algolia/types.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'products',
+      prefix: 'Algolia', // Optional
+      postfix: 'Type', // Optional
     },
   },
 };
@@ -73,17 +73,17 @@ npx algolia-codegen
 Create a configuration file named `algolia-codegen.ts` (or `.js`) in your project root. The config file should export a default object with the following structure:
 
 ```typescript
-import type { AlgoliaCodegenConfig } from "algolia-codegen";
+import type { AlgoliaCodegenConfig } from 'algolia-codegen';
 
 const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: {
-    "src/algolia/types.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "products",
-      prefix: "Algolia", // Optional
-      postfix: "Type", // Optional
+    'src/algolia/types.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'products',
+      prefix: 'Algolia', // Optional
+      postfix: 'Type', // Optional
     },
   },
 };
@@ -99,15 +99,15 @@ You can generate types for multiple indices:
 const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: {
-    "src/algolia/products.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "products",
+    'src/algolia/products.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'products',
     },
-    "src/algolia/users.ts": {
-      appId: "YOUR_APP_ID",
-      searchKey: "YOUR_SEARCH_API_KEY",
-      indexName: "users",
+    'src/algolia/users.ts': {
+      appId: 'YOUR_APP_ID',
+      searchKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'users',
     },
   },
 };
@@ -122,17 +122,17 @@ const config: AlgoliaCodegenConfig = {
   overwrite: true,
   generates: [
     {
-      "src/algolia/products.ts": {
-        appId: "YOUR_APP_ID",
-        searchKey: "YOUR_SEARCH_API_KEY",
-        indexName: "products",
+      'src/algolia/products.ts': {
+        appId: 'YOUR_APP_ID',
+        searchKey: 'YOUR_SEARCH_API_KEY',
+        indexName: 'products',
       },
     },
     {
-      "src/algolia/users.ts": {
-        appId: "YOUR_APP_ID",
-        searchKey: "YOUR_SEARCH_API_KEY",
-        indexName: "users",
+      'src/algolia/users.ts': {
+        appId: 'YOUR_APP_ID',
+        searchKey: 'YOUR_SEARCH_API_KEY',
+        indexName: 'users',
       },
     },
   ],
@@ -195,13 +195,13 @@ type AlgoliaCodegenGeneratorConfig = {
    - Fetches a sample record from the specified index
    - Analyzes the record structure and generates TypeScript types
    - Creates a single TypeScript file containing all types found in the index
-3. **Type Generation**: The generator automatically:
+4. **Type Generation**: The generator automatically:
    - Infers types from the sample record structure
    - Handles nested objects, arrays, and complex types
    - Detects and generates generic `IdValue<T>` types for Algolia's id-value pattern arrays
    - Generates proper TypeScript interfaces with JSDoc comments
    - Sorts types by dependencies for correct ordering
-4. **Error Handling**: Continues processing other files even if one fails, with detailed error messages
+5. **Error Handling**: Continues processing other files even if one fails, with detailed error messages
 
 Each generated file contains all types found in the index, including nested types, properly organized and sorted by dependencies.
 

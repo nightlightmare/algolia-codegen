@@ -13,13 +13,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['src/**/*.ts'],
-      exclude: [
-        '**/*.test.ts',
-        '**/*.spec.ts',
-        '**/types.ts',
-        '**/cli.ts',
-        '**/index.ts',
-      ],
+      exclude: ['**/*.test.ts', '**/*.spec.ts', '**/types.ts', '**/cli.ts', '**/index.ts'],
       thresholds: {
         lines: 70,
         functions: 70,
@@ -29,4 +23,3 @@ export default defineConfig({
     },
   },
 });
-

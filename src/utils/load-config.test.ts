@@ -51,9 +51,7 @@ describe('loadConfig', () => {
 
     const result = await loadConfig();
 
-    expect(existsSync).toHaveBeenCalledWith(
-      resolve('/test/working/dir', 'algolia-codegen.ts')
-    );
+    expect(existsSync).toHaveBeenCalledWith(resolve('/test/working/dir', 'algolia-codegen.ts'));
     expect(result).toEqual(mockConfig);
   });
 
@@ -81,18 +79,14 @@ describe('loadConfig', () => {
 
     const result = await loadConfig(customPath);
 
-    expect(existsSync).toHaveBeenCalledWith(
-      resolve('/test/working/dir', customPath)
-    );
+    expect(existsSync).toHaveBeenCalledWith(resolve('/test/working/dir', customPath));
     expect(result).toEqual(mockConfig);
   });
 
   it('should throw error if config file does not exist', async () => {
     vi.mocked(existsSync).mockReturnValue(false);
 
-    await expect(loadConfig('non-existent.ts')).rejects.toThrow(
-      'Config file not found'
-    );
+    await expect(loadConfig('non-existent.ts')).rejects.toThrow('Config file not found');
   });
 
   it('should throw error if config file does not have default export', async () => {
@@ -100,11 +94,9 @@ describe('loadConfig', () => {
     vi.mocked(existsSync).mockReturnValue(true);
     vi.mocked(loadTypeScriptConfig).mockResolvedValue({
       // No default export
-    } as any);
+    } as Record<string, unknown>);
 
-    await expect(loadConfig()).rejects.toThrow(
-      'Config file does not export a default object'
-    );
+    await expect(loadConfig()).rejects.toThrow('Config file does not export a default object');
   });
 
   it('should throw error if default export is not an object', async () => {
@@ -112,11 +104,9 @@ describe('loadConfig', () => {
     vi.mocked(existsSync).mockReturnValue(true);
     vi.mocked(loadTypeScriptConfig).mockResolvedValue({
       default: 'not an object',
-    } as any);
+    } as Record<string, unknown>);
 
-    await expect(loadConfig()).rejects.toThrow(
-      'Config file default export must be an object'
-    );
+    await expect(loadConfig()).rejects.toThrow('Config file default export must be an object');
   });
 
   it('should throw error if default export is null', async () => {
@@ -124,12 +114,10 @@ describe('loadConfig', () => {
     vi.mocked(existsSync).mockReturnValue(true);
     vi.mocked(loadTypeScriptConfig).mockResolvedValue({
       default: null,
-    } as any);
+    } as Record<string, unknown>);
 
     // When default is null, the check !configModule.default catches it first
-    await expect(loadConfig()).rejects.toThrow(
-      'Config file does not export a default object'
-    );
+    await expect(loadConfig()).rejects.toThrow('Config file does not export a default object');
   });
 
   it('should throw error if default export is an array', async () => {
@@ -137,11 +125,9 @@ describe('loadConfig', () => {
     vi.mocked(existsSync).mockReturnValue(true);
     vi.mocked(loadTypeScriptConfig).mockResolvedValue({
       default: [],
-    } as any);
+    } as Record<string, unknown>);
 
-    await expect(loadConfig()).rejects.toThrow(
-      'Config file default export must be an object'
-    );
+    await expect(loadConfig()).rejects.toThrow('Config file default export must be an object');
   });
 
   it('should validate config after loading', async () => {
@@ -179,9 +165,7 @@ describe('loadConfig', () => {
     vi.mocked(existsSync).mockImplementation((path: PathLike) => {
       return String(path).endsWith('.ts');
     });
-    vi.mocked(loadTypeScriptConfig).mockRejectedValue(
-      new Error('TypeScript compilation error')
-    );
+    vi.mocked(loadTypeScriptConfig).mockRejectedValue(new Error('TypeScript compilation error'));
 
     await expect(loadConfig()).rejects.toThrow('Failed to load TypeScript config file');
   });

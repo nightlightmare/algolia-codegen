@@ -21,7 +21,7 @@ export async function fetchAlgoliaData(
   if (existsSync(resolvedPath) && !overwrite) {
     throw new Error(
       `File already exists: ${resolvedPath}\n` +
-      `Set overwrite: true in config to allow overwriting existing files.`
+        `Set overwrite: true in config to allow overwriting existing files.`
     );
   }
 
@@ -30,10 +30,7 @@ export async function fetchAlgoliaData(
 
   let client;
   try {
-    client = algoliasearch(
-      generatorConfig.appId,
-      generatorConfig.searchKey,
-    );
+    client = algoliasearch(generatorConfig.appId, generatorConfig.searchKey);
   } catch (error) {
     throw new Error(
       `Failed to initialize Algolia client: ${error instanceof Error ? error.message : String(error)}`

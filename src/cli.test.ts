@@ -36,12 +36,10 @@ vi.mock('commander', async () => {
 
 describe('CLI', () => {
   let originalArgv: string[];
-  let originalCwd: () => string;
 
   beforeEach(() => {
     // Save original values
     originalArgv = [...process.argv];
-    originalCwd = process.cwd;
 
     // Reset module cache to allow re-importing CLI module
     vi.resetModules();
@@ -66,9 +64,7 @@ describe('CLI', () => {
       // Import CLI to trigger .env loading
       await import('./cli.js');
 
-      expect(existsSync).toHaveBeenCalledWith(
-        resolve('/test/working/dir', '.env')
-      );
+      expect(existsSync).toHaveBeenCalledWith(resolve('/test/working/dir', '.env'));
       expect(loadDotenv).toHaveBeenCalledWith({
         path: resolve('/test/working/dir', '.env'),
       });
@@ -80,24 +76,20 @@ describe('CLI', () => {
       // Import CLI to trigger .env loading check
       await import('./cli.js');
 
-      expect(existsSync).toHaveBeenCalledWith(
-        resolve('/test/working/dir', '.env')
-      );
+      expect(existsSync).toHaveBeenCalledWith(resolve('/test/working/dir', '.env'));
       expect(loadDotenv).not.toHaveBeenCalled();
     });
 
     it('should resolve .env path relative to current working directory', async () => {
       // Reset modules to ensure fresh import
       vi.resetModules();
-      
+
       vi.mocked(existsSync).mockReturnValue(true);
       vi.spyOn(process, 'cwd').mockReturnValue('/custom/working/directory');
 
       await import('./cli.js');
 
-      expect(existsSync).toHaveBeenCalledWith(
-        resolve('/custom/working/directory', '.env')
-      );
+      expect(existsSync).toHaveBeenCalledWith(resolve('/custom/working/directory', '.env'));
       expect(loadDotenv).toHaveBeenCalledWith({
         path: resolve('/custom/working/directory', '.env'),
       });
@@ -199,9 +191,7 @@ describe('CLI', () => {
           }
         });
 
-      await expect(
-        program.parseAsync(['node', 'cli.js'])
-      ).rejects.toThrow();
+      await expect(program.parseAsync(['node', 'cli.js'])).rejects.toThrow();
 
       consoleErrorSpy.mockRestore();
     });
