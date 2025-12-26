@@ -5,6 +5,7 @@ import { fetchAlgoliaData } from './fetch-algolia-data.js';
 import type { AlgoliaCodegenGeneratorConfig } from '../types.js';
 import { algoliasearch } from 'algoliasearch';
 import { generateTypeScriptTypes } from './generate-typescript-types.js';
+import type Logger from './logger.js';
 
 // Mock dependencies
 vi.mock('fs', () => ({
@@ -46,6 +47,33 @@ describe('fetchAlgoliaData', () => {
     ],
   };
 
+  const mockSpinner = {
+    start: vi.fn(),
+    succeed: vi.fn(),
+    fail: vi.fn(),
+  };
+
+  const mockLogger: Logger = {
+    info: vi.fn(),
+    success: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    verbose: vi.fn(),
+    dryRun: vi.fn(),
+    spinner: vi.fn(() => mockSpinner),
+    fileOperation: vi.fn(),
+    formatError: vi.fn((error: unknown) => {
+      if (error instanceof Error) return error.message;
+      return String(error);
+    }),
+    get isVerbose(): boolean {
+      return false;
+    },
+    get isDryRun(): boolean {
+      return false;
+    },
+  } as unknown as Logger;
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(process, 'cwd').mockReturnValue('/test/working/dir');
@@ -67,9 +95,9 @@ describe('fetchAlgoliaData', () => {
       return String(path) === resolvedPath;
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow(`File already exists: ${resolvedPath}`);
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      `File already exists: ${resolvedPath}`
+    );
 
     expect(existsSync).toHaveBeenCalledWith(resolvedPath);
   });
@@ -85,7 +113,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, true);
+    await fetchAlgoliaData(filePath, baseConfig, true, mockLogger);
 
     expect(existsSync).toHaveBeenCalledWith(resolvedPath);
     expect(mockSearchClient.search).toHaveBeenCalled();
@@ -99,9 +127,9 @@ describe('fetchAlgoliaData', () => {
       throw new Error('Invalid API key');
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('Failed to initialize Algolia client: Invalid API key');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'Failed to initialize Algolia client: Invalid API key'
+    );
   });
 
   it('should throw error if Algolia client initialization fails with non-Error', async () => {
@@ -112,22 +140,18 @@ describe('fetchAlgoliaData', () => {
       throw 'String error';
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('Failed to initialize Algolia client: String error');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'Failed to initialize Algolia client: String error'
+    );
   });
 
   it('should throw error if Algolia search fails with Error instance', async () => {
     const filePath = 'src/types/algolia.ts';
 
     vi.mocked(existsSync).mockReturnValue(false);
-    vi.mocked(mockSearchClient.search).mockRejectedValue(
-      new Error('Network error')
-    );
+    vi.mocked(mockSearchClient.search).mockRejectedValue(new Error('Network error'));
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow(
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
       'Failed to fetch data from Algolia index "test-index" (App ID: test-app-id): Network error'
     );
   });
@@ -140,9 +164,7 @@ describe('fetchAlgoliaData', () => {
       message: 'Invalid index name',
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow(
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
       'Failed to fetch data from Algolia index "test-index" (App ID: test-app-id): Invalid index name'
     );
   });
@@ -156,9 +178,7 @@ describe('fetchAlgoliaData', () => {
       statusText: 'Not Found',
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow(
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
       'Failed to fetch data from Algolia index "test-index" (App ID: test-app-id): HTTP 404: Not Found'
     );
   });
@@ -171,9 +191,7 @@ describe('fetchAlgoliaData', () => {
       status: 500,
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow(
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
       'Failed to fetch data from Algolia index "test-index" (App ID: test-app-id): HTTP 500: Unknown error'
     );
   });
@@ -187,9 +205,9 @@ describe('fetchAlgoliaData', () => {
       data: { nested: 'value' },
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('Failed to fetch data from Algolia index "test-index"');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'Failed to fetch data from Algolia index "test-index"'
+    );
   });
 
   it('should handle error when JSON.stringify fails', async () => {
@@ -208,9 +226,9 @@ describe('fetchAlgoliaData', () => {
       throw new Error('Circular reference');
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('Failed to fetch data from Algolia index "test-index"');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'Failed to fetch data from Algolia index "test-index"'
+    );
 
     // Restore original
     JSON.stringify = originalStringify;
@@ -222,9 +240,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(mockSearchClient.search).mockRejectedValue('String error');
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow(
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
       'Failed to fetch data from Algolia index "test-index" (App ID: test-app-id): String error'
     );
   });
@@ -237,9 +253,9 @@ describe('fetchAlgoliaData', () => {
       results: [],
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('No results found in Algolia index: test-index');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'No results found in Algolia index: test-index'
+    );
   });
 
   it('should throw error if results.results is undefined', async () => {
@@ -248,9 +264,9 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(mockSearchClient.search).mockResolvedValue({} as never);
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('No results found in Algolia index: test-index');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'No results found in Algolia index: test-index'
+    );
   });
 
   it('should throw error if no hits found in results', async () => {
@@ -261,9 +277,9 @@ describe('fetchAlgoliaData', () => {
       results: [{}],
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('No hits found in Algolia index: test-index');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'No hits found in Algolia index: test-index'
+    );
   });
 
   it('should throw error if hits array is empty', async () => {
@@ -278,9 +294,9 @@ describe('fetchAlgoliaData', () => {
       ],
     });
 
-    await expect(
-      fetchAlgoliaData(filePath, baseConfig, false)
-    ).rejects.toThrow('No hits found in Algolia index: test-index');
+    await expect(fetchAlgoliaData(filePath, baseConfig, false, mockLogger)).rejects.toThrow(
+      'No hits found in Algolia index: test-index'
+    );
   });
 
   it('should create directory if it does not exist', async () => {
@@ -295,7 +311,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
     expect(existsSync).toHaveBeenCalledWith(dir);
     expect(mkdirSync).not.toHaveBeenCalled();
@@ -315,7 +331,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
     expect(existsSync).toHaveBeenCalledWith(dir);
     expect(mkdirSync).toHaveBeenCalledWith(dir, { recursive: true });
@@ -334,7 +350,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue(generatedContent);
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
     expect(generateTypeScriptTypes).toHaveBeenCalledWith(mockSampleHit, baseConfig);
     expect(writeFileSync).toHaveBeenCalledWith(resolvedPath, generatedContent, 'utf-8');
@@ -350,7 +366,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
     expect(mockSearchClient.search).toHaveBeenCalledWith([
       {
@@ -373,15 +389,16 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
-    expect(console.log).toHaveBeenCalledWith(`\nProcessing file: ${filePath}`);
-    expect(console.log).toHaveBeenCalledWith('Connecting to Algolia...');
-    expect(console.log).toHaveBeenCalledWith(`App ID: ${baseConfig.appId}`);
-    expect(console.log).toHaveBeenCalledWith(`Fetching sample record from index: ${baseConfig.indexName}`);
-    expect(console.log).toHaveBeenCalledWith('Sample record fetched successfully');
-    expect(console.log).toHaveBeenCalledWith(`ObjectID: ${mockSampleHit.objectID}`);
-    expect(console.log).toHaveBeenCalledWith(`Generated file: ${filePath}`);
+    expect(mockLogger.info).toHaveBeenCalledWith(`Processing file: ${filePath}`);
+    expect(mockLogger.spinner).toHaveBeenCalledWith('Connecting to Algolia...');
+    expect(mockLogger.verbose).toHaveBeenCalledWith(`App ID: ${baseConfig.appId}`);
+    expect(mockLogger.spinner).toHaveBeenCalledWith(
+      `Fetching sample record from index: ${baseConfig.indexName}`
+    );
+    expect(mockLogger.verbose).toHaveBeenCalledWith(`ObjectID: ${mockSampleHit.objectID}`);
+    expect(mockLogger.success).toHaveBeenCalledWith(`Generated file: ${filePath}`);
   });
 
   it('should handle objectID as undefined in sample hit', async () => {
@@ -403,9 +420,9 @@ describe('fetchAlgoliaData', () => {
     });
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
-    expect(console.log).toHaveBeenCalledWith('ObjectID: N/A');
+    expect(mockLogger.verbose).toHaveBeenCalledWith('ObjectID: N/A');
   });
 
   it('should initialize Algolia client with correct credentials', async () => {
@@ -418,7 +435,7 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, baseConfig, false);
+    await fetchAlgoliaData(filePath, baseConfig, false, mockLogger);
 
     expect(algoliasearch).toHaveBeenCalledWith(baseConfig.appId, baseConfig.searchKey);
   });
@@ -438,9 +455,8 @@ describe('fetchAlgoliaData', () => {
     vi.mocked(mockSearchClient.search).mockResolvedValue(mockSearchResponse);
     vi.mocked(generateTypeScriptTypes).mockReturnValue('export interface Test {}');
 
-    await fetchAlgoliaData(filePath, config, false);
+    await fetchAlgoliaData(filePath, config, false, mockLogger);
 
     expect(generateTypeScriptTypes).toHaveBeenCalledWith(mockSampleHit, config);
   });
 });
-
