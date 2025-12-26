@@ -82,7 +82,7 @@ class TypeGenerator {
         // Check if we have metadata for this field path to generate Enum
         const fieldPath = path.join('.');
         const enumMetadata = this.metadata[fieldPath];
-        
+
         if (enumMetadata && firstType.type === 'string' && enumMetadata.isStringArray) {
           // Generate Enum type for this field
           const enumTypeName = this.generateEnumTypeName(path);
@@ -110,7 +110,7 @@ class TypeGenerator {
             nestedTypes: new Map(),
           };
         }
-        
+
         return {
           type: `${firstType.type}[]`,
           isOptional: false,
@@ -213,13 +213,13 @@ class TypeGenerator {
    */
   private generateEnumType(typeName: string, values: (string | number)[]): void {
     const lines: string[] = [];
-    
+
     lines.push('/**');
     lines.push(` * Enum for ${typeName}`);
     lines.push(` * Generated from ${values.length} unique values found in Algolia index`);
     lines.push(' */');
     lines.push(`export enum ${typeName} {`);
-    
+
     const usedKeys = new Set<string>();
     for (const value of values) {
       // Convert value to valid enum key
@@ -231,7 +231,7 @@ class TypeGenerator {
           .replace(/[^A-Z0-9_]/g, '_')
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '');
-        
+
         // If key is empty or starts with number, prefix it
         if (!key || /^\d/.test(key)) {
           key = `VALUE_${key || 'EMPTY'}`;
@@ -239,7 +239,7 @@ class TypeGenerator {
       } else {
         key = `VALUE_${value}`;
       }
-      
+
       // Ensure unique keys
       let finalKey = key;
       let counter = 1;
@@ -248,14 +248,15 @@ class TypeGenerator {
         counter++;
       }
       usedKeys.add(finalKey);
-      
-      const valueStr = typeof value === 'string' ? `'${value.replace(/'/g, "\\'")}'` : String(value);
+
+      const valueStr =
+        typeof value === 'string' ? `'${value.replace(/'/g, "\\'")}'` : String(value);
       lines.push(`  ${finalKey} = ${valueStr},`);
     }
-    
+
     lines.push('}');
     lines.push('');
-    
+
     this.typeMap.set(typeName, lines.join('\n'));
     this.generatedTypes.add(typeName);
   }

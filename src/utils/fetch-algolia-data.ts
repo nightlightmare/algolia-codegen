@@ -34,7 +34,7 @@ function mergeHits(
 
   const merged: Record<string, unknown> = {};
   const allKeys = new Set<string>();
-  
+
   // Collect all keys from all hits
   for (const hit of hits) {
     for (const key of Object.keys(hit)) {
@@ -45,7 +45,7 @@ function mergeHits(
   // Merge each key
   for (const key of allKeys) {
     const values = hits.map((hit) => hit[key]).filter((v) => v !== undefined);
-    
+
     if (values.length === 0) {
       continue;
     }
@@ -58,12 +58,10 @@ function mergeHits(
       const seen = new Set<string>();
       const stringValues = new Set<string>();
       const numberValues = new Set<number>();
-      let isStringArray = false;
-      let isNumberArray = false;
-      
+
       let allStrings = true;
       let allNumbers = true;
-      
+
       for (const arr of arrays) {
         for (const item of arr) {
           // Check if all items are strings or numbers
@@ -77,20 +75,19 @@ function mergeHits(
             allStrings = false;
             allNumbers = false;
           }
-          
+
           // For objects, use JSON.stringify to check uniqueness
           // For primitives, use the value directly
-          const itemKey = typeof item === 'object' && item !== null
-            ? JSON.stringify(item)
-            : String(item);
-          
+          const itemKey =
+            typeof item === 'object' && item !== null ? JSON.stringify(item) : String(item);
+
           if (!seen.has(itemKey)) {
             seen.add(itemKey);
             mergedArray.push(item);
           }
         }
       }
-      
+
       // Store metadata for string/number arrays to generate Enum types
       const fieldPath = [...path, key].join('.');
       if (allStrings && stringValues.size > 0 && stringValues.size <= 100) {
@@ -105,7 +102,7 @@ function mergeHits(
           isStringArray: false,
         };
       }
-      
+
       // If merged array has items, use it. Otherwise, try to find first non-empty array
       if (mergedArray.length > 0) {
         merged[key] = mergedArray;
@@ -238,7 +235,9 @@ export async function fetchAlgoliaData(
   const { merged: mergedHit, metadata } = mergeHits(hits);
   logger.verbose('Merged records for type generation');
   if (Object.keys(metadata).length > 0) {
-    logger.verbose(`Found ${Object.keys(metadata).length} fields with known values for Enum generation`);
+    logger.verbose(
+      `Found ${Object.keys(metadata).length} fields with known values for Enum generation`
+    );
   }
 
   // Generate TypeScript types from the merged hit with metadata for Enum generation
